@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Learning Games</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared/styles.css">
+    <style>
+        .hero-section {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .hero-title {
+            font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+            font-size: 2.5em;
+            color: var(--color-brand-dark);
+            margin-bottom: var(--space-sm);
+            font-weight: 600;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2em;
+            color: var(--color-neutral-700);
+            font-weight: 400;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+
+        .game-card {
+            background: white;
+            border: 2px solid var(--color-neutral-100);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            text-decoration: none;
+            color: inherit;
+            transition: all var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .game-card:hover {
+            border-color: var(--color-brand-primary);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .game-icon {
+            font-size: 4em;
+            margin-bottom: var(--space-sm);
+        }
+
+        .game-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: var(--color-brand-dark);
+            margin-bottom: var(--space-xs);
+            font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .game-description {
+            font-size: 0.95em;
+            color: var(--color-neutral-700);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 1.8em;
+            }
+
+            .hero-subtitle {
+                font-size: 1em;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .game-icon {
+                font-size: 3em;
+            }
+
+            .game-title {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Game Container -->
+        <div class="game-container">
+            <div class="hero-section">
+                <h1 class="hero-title">English Learning Games</h1>
+                <p class="hero-subtitle">Fun games to practice English!</p>
+            </div>
+
+            <!-- Games Grid -->
+            <div class="games-grid">
+                <a href="healthy/" class="game-card">
+                    <div class="game-icon">🍎</div>
+                    <div class="game-title">Healthy or Not?</div>
+                    <div class="game-description">Learn about healthy and unhealthy foods!</div>
+                </a>
+
+                <!-- More games can be added here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="shared/components.js"></script>
+</body>
+</html>
