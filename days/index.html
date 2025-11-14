@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Days of the Week</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="days.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <h1 class="game-logo">📅 Days of the Week 📅</h1>
+        </div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Learn the Days!</h1>
+                <p class="subtitle">Practice days of the week in English</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card day-card" id="day-card">
+                        <div class="day-emoji" id="day-emoji">📅</div>
+                        <div class="question-text" id="question-text">What comes after Monday?</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <!-- Answer pills will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-link">← Back to Menu</a>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        const dayEmojis = {
+            'Monday': '💼',
+            'Tuesday': '📝',
+            'Wednesday': '🐫',
+            'Thursday': '⚡',
+            'Friday': '🎉',
+            'Saturday': '🏖️',
+            'Sunday': '😴'
+        };
+
+        const questionTypes = [
+            { type: 'after', text: 'What comes AFTER {day}?' },
+            { type: 'before', text: 'What comes BEFORE {day}?' },
+            { type: 'order', text: 'Which day is {position}?' }
+        ];
+
+        let currentQuestion = null;
+        let streak = 0;
+        let maxStreak = 0;
+        let autoAdvanceTimer = null;
+
+        const correctMessages = [
+            "⭐ Perfect! That's right!",
+            "🎉 Excellent work!",
+            "👏 Amazing! You got it!",
+            "🌟 Yes! Great job!",
+            "💚 Fantastic!",
+            "🎊 Brilliant!",
+            "✨ Correct!",
+            "🏆 Outstanding!",
+            "💪 Well done!",
+            "🎯 Spot on!"
+        ];
+
+        const incorrectMessages = [
+            "💭 Not quite! The answer is",
+            "🤔 Good try! It's actually",
+            "📚 Let's learn! The correct answer is",
+            "💡 Almost! It's",
+            "🌱 Nice effort! The answer is",
+            "🎓 Keep learning! It's",
+            "🔍 Not this time! The correct answer is",
+            "📖 Don't worry! It's",
+            "🧠 Learning time! The answer is",
+            "💫 Good guess! It's actually"
+        ];
+
+        function getRandomMessage(messages) {
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function generateQuestion() {
+            const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+            let correctAnswer, dayIndex, questionText;
+
+            if (questionType.type === 'after') {
+                dayIndex = Math.floor(Math.random() * 6); // 0-5 (not Sunday)
+                const day = daysOfWeek[dayIndex];
+                correctAnswer = daysOfWeek[dayIndex + 1];
+                questionText = questionType.text.replace('{day}', day);
+            } else if (questionType.type === 'before') {
+                dayIndex = Math.floor(Math.random() * 6) + 1; // 1-6 (not Monday)
+                const day = daysOfWeek[dayIndex];
+                correctAnswer = daysOfWeek[dayIndex - 1];
+                questionText = questionType.text.replace('{day}', day);
+            } else { // order
+                dayIndex = Math.floor(Math.random() * 7);
+                correctAnswer = daysOfWeek[dayIndex];
+                const positions = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
+                questionText = questionType.text.replace('{position}', positions[dayIndex]);
+            }
+
+            return { questionText, correctAnswer, emoji: dayEmojis[correctAnswer] };
+        }
+
+        function getWrongDays(correct) {
+            const wrong = [];
+            while (wrong.length < 2) {
+                const randomDay = daysOfWeek[Math.floor(Math.random() * daysOfWeek.length)];
+                if (randomDay !== correct && !wrong.includes(randomDay)) {
+                    wrong.push(randomDay);
+                }
+            }
+            return wrong;
+        }
+
+        function displayRound() {
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+
+            currentQuestion = generateQuestion();
+
+            document.getElementById('day-emoji').textContent = '📅';
+            document.getElementById('question-text').textContent = currentQuestion.questionText;
+
+            // Create answer options
+            const optionsContainer = document.getElementById('answer-options');
+            optionsContainer.innerHTML = '';
+
+            const wrongDays = getWrongDays(currentQuestion.correctAnswer);
+            const options = [currentQuestion.correctAnswer, ...wrongDays];
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(option => {
+                const pill = document.createElement('button');
+                pill.className = 'answer-pill';
+                pill.textContent = option;
+                pill.onclick = () => makeGuess(option);
+                optionsContainer.appendChild(pill);
+            });
+
+            document.getElementById('day-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('show', 'correct', 'incorrect');
+            const nextButton = document.getElementById('next-button');
+            nextButton.classList.remove('show', 'auto-advance');
+        }
+
+        function makeGuess(selectedDay) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+            const dayCard = document.getElementById('day-card');
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const isCorrect = selectedDay === currentQuestion.correctAnswer;
+
+            // Change emoji to the correct answer's emoji
+            document.getElementById('day-emoji').textContent = currentQuestion.emoji;
+
+            if (isCorrect) {
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+
+                const weekOrder = daysOfWeek.join(' → ');
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(correctMessages)}</div>
+                    <div style="margin-top: 0.5rem; font-size: 0.9em;">${weekOrder}</div>
+                `;
+                feedback.classList.add('show', 'correct');
+                dayCard.classList.add('correct');
+
+                pills.forEach(pill => {
+                    if (pill.textContent === selectedDay) {
+                        pill.classList.add('correct');
+                    }
+                });
+            } else {
+                streak = 0;
+
+                const weekOrder = daysOfWeek.join(' → ');
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(incorrectMessages)} "${currentQuestion.correctAnswer}"</div>
+                    <div style="margin-top: 0.5rem; font-size: 0.9em;">${weekOrder}</div>
+                `;
+                feedback.classList.add('show', 'incorrect');
+                dayCard.classList.add('incorrect');
+
+                pills.forEach(pill => {
+                    if (pill.textContent === selectedDay) {
+                        pill.classList.add('incorrect');
+                    } else if (pill.textContent === currentQuestion.correctAnswer) {
+                        pill.classList.add('correct');
+                    }
+                });
+            }
+
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('max-streak').textContent = maxStreak;
+
+            nextButton.classList.add('show');
+            setTimeout(() => nextButton.classList.add('auto-advance'), 10);
+            autoAdvanceTimer = setTimeout(() => nextRound(), 3500);
+        }
+
+        function nextRound() {
+            const guessLayout = document.querySelector('.guess-layout');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+
+            guessLayout.classList.add('fade-out');
+            feedback.classList.add('fade-out');
+            nextButton.classList.add('fade-out');
+
+            setTimeout(() => {
+                feedback.classList.remove('fade-out');
+                nextButton.classList.remove('fade-out');
+                displayRound();
+
+                setTimeout(() => {
+                    guessLayout.classList.remove('fade-out');
+                    guessLayout.classList.add('fade-in');
+                    setTimeout(() => guessLayout.classList.remove('fade-in'), 400);
+                }, 50);
+            }, 300);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

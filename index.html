@@ -31,8 +31,8 @@
 
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--space-md);
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--space-sm);
             margin-top: var(--space-lg);
         }
 
@@ -40,7 +40,7 @@
             background: white;
             border: 2px solid var(--color-neutral-100);
             border-radius: var(--radius-md);
-            padding: var(--space-lg);
+            padding: var(--space-md);
             text-decoration: none;
             color: inherit;
             transition: all var(--transition);
@@ -57,12 +57,12 @@
         }
 
         .game-icon {
-            font-size: 4em;
-            margin-bottom: var(--space-sm);
+            font-size: 3em;
+            margin-bottom: var(--space-xs);
         }
 
         .game-title {
-            font-size: 1.4em;
+            font-size: 1.1em;
             font-weight: 600;
             color: var(--color-brand-dark);
             margin-bottom: var(--space-xs);
@@ -70,9 +70,9 @@
         }
 
         .game-description {
-            font-size: 0.95em;
+            font-size: 0.85em;
             color: var(--color-neutral-700);
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         @media (max-width: 768px) {
@@ -119,7 +119,17 @@
                     <div class="game-description">Learn about healthy and unhealthy foods!</div>
                 </a>
 
-                <!-- More games can be added here -->
+                <a href="plural/" class="game-card">
+                    <div class="game-icon">🐶</div>
+                    <div class="game-title">Plural or Singular?</div>
+                    <div class="game-description">Learn when to use singular and plural words!</div>
+                </a>
+
+                <a href="counting/" class="game-card">
+                    <div class="game-icon">🔢</div>
+                    <div class="game-title">Count & Learn</div>
+                    <div class="game-description">Count the items and learn number words!</div>
+                </a>
             </div>
         </div>
     </div>

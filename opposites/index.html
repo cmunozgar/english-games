@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opposite Words</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="opposites.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <h1 class="game-logo">🔄 Opposite Words 🔄</h1>
+        </div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Find the Opposite!</h1>
+                <p class="subtitle">Learn antonyms in English</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card word-card" id="word-card">
+                        <div class="word-emoji" id="word-emoji">😊</div>
+                        <div class="word-text" id="word-text">Happy</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <!-- Answer pills will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-link">← Back to Menu</a>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        // Opposite word pairs with emojis
+        const wordPairs = [
+            { word: 'Happy', emoji: '😊', opposite: 'Sad', oppositeEmoji: '😢', decoys: ['Angry', 'Excited'] },
+            { word: 'Big', emoji: '🐘', opposite: 'Small', oppositeEmoji: '🐜', decoys: ['Tall', 'Wide'] },
+            { word: 'Hot', emoji: '🔥', opposite: 'Cold', oppositeEmoji: '❄️', decoys: ['Warm', 'Cool'] },
+            { word: 'Fast', emoji: '🚀', opposite: 'Slow', oppositeEmoji: '🐌', decoys: ['Quick', 'Speedy'] },
+            { word: 'Clean', emoji: '✨', opposite: 'Dirty', oppositeEmoji: '💩', decoys: ['Neat', 'Tidy'] },
+            { word: 'Good', emoji: '👍', opposite: 'Bad', oppositeEmoji: '👎', decoys: ['Great', 'Nice'] },
+            { word: 'Loud', emoji: '📢', opposite: 'Quiet', oppositeEmoji: '🤫', decoys: ['Noisy', 'Soft'] },
+            { word: 'Old', emoji: '👴', opposite: 'Young', oppositeEmoji: '👶', decoys: ['Ancient', 'New'] },
+            { word: 'Full', emoji: '🍺', opposite: 'Empty', oppositeEmoji: '🥛', decoys: ['Filled', 'Complete'] },
+            { word: 'Light', emoji: '💡', opposite: 'Dark', oppositeEmoji: '🌑', decoys: ['Bright', 'Shiny'] },
+            { word: 'Up', emoji: '⬆️', opposite: 'Down', oppositeEmoji: '⬇️', decoys: ['High', 'Top'] },
+            { word: 'Open', emoji: '🚪', opposite: 'Closed', oppositeEmoji: '🔒', decoys: ['Wide', 'Unlocked'] },
+            { word: 'Wet', emoji: '💦', opposite: 'Dry', oppositeEmoji: '🏜️', decoys: ['Damp', 'Soaked'] },
+            { word: 'Strong', emoji: '💪', opposite: 'Weak', oppositeEmoji: '🤕', decoys: ['Powerful', 'Tough'] },
+            { word: 'Day', emoji: '☀️', opposite: 'Night', oppositeEmoji: '🌙', decoys: ['Morning', 'Noon'] }
+        ];
+
+        let currentPair = null;
+        let answerOptions = [];
+        let streak = 0;
+        let maxStreak = 0;
+        let usedPairs = new Set();
+        let autoAdvanceTimer = null;
+
+        const correctMessages = [
+            "⭐ Perfect! That's the opposite!",
+            "🎉 Excellent! You got it!",
+            "👏 Amazing! Well done!",
+            "🌟 Yes! Great job!",
+            "💚 Fantastic work!",
+            "🎊 Brilliant! That's right!",
+            "✨ Correct! Super smart!",
+            "🏆 Outstanding! You're good at this!",
+            "💪 Perfect match!",
+            "🎯 Spot on!"
+        ];
+
+        const incorrectMessages = [
+            "💭 Not quite! The opposite is",
+            "🤔 Good try! The answer is",
+            "📚 Let's learn! The opposite is",
+            "💡 Almost! It's actually",
+            "🌱 Nice effort! The correct answer is",
+            "🎓 Keep learning! The opposite is",
+            "🔍 Not this time! The answer is",
+            "📖 Don't worry! The opposite is",
+            "🧠 Learning time! It's",
+            "💫 Good guess! The correct opposite is"
+        ];
+
+        function getRandomMessage(messages) {
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function getRandomPair() {
+            let attempts = 0;
+            while (attempts < 100) {
+                const randomIndex = Math.floor(Math.random() * wordPairs.length);
+                const pair = wordPairs[randomIndex];
+                if (!usedPairs.has(pair.word)) {
+                    usedPairs.add(pair.word);
+                    return pair;
+                }
+                attempts++;
+            }
+            usedPairs.clear();
+            return wordPairs[Math.floor(Math.random() * wordPairs.length)];
+        }
+
+        function getAnswerOptions(correctPair) {
+            const options = [correctPair.opposite, ...correctPair.decoys];
+            return options.sort(() => Math.random() - 0.5);
+        }
+
+        function displayRound() {
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+
+            currentPair = getRandomPair();
+            answerOptions = getAnswerOptions(currentPair);
+
+            document.getElementById('word-emoji').textContent = currentPair.emoji;
+            document.getElementById('word-text').textContent = currentPair.word;
+
+            const optionsContainer = document.getElementById('answer-options');
+            optionsContainer.innerHTML = '';
+
+            answerOptions.forEach(option => {
+                const pill = document.createElement('button');
+                pill.className = 'answer-pill';
+                pill.textContent = option;
+                pill.onclick = () => makeGuess(option);
+                optionsContainer.appendChild(pill);
+            });
+
+            document.getElementById('word-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('show', 'correct', 'incorrect');
+            const nextButton = document.getElementById('next-button');
+            nextButton.classList.remove('show', 'auto-advance');
+        }
+
+        function makeGuess(selectedWord) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+            const wordCard = document.getElementById('word-card');
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const isCorrect = selectedWord === currentPair.opposite;
+
+            if (isCorrect) {
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(correctMessages)}</div>
+                    <div style="margin-top: 0.5rem;">${currentPair.word} ↔️ ${currentPair.opposite}</div>
+                `;
+                feedback.classList.add('show', 'correct');
+                wordCard.classList.add('correct');
+
+                pills.forEach(pill => {
+                    if (pill.textContent === selectedWord) {
+                        pill.classList.add('correct');
+                    }
+                });
+            } else {
+                streak = 0;
+
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(incorrectMessages)} "${currentPair.opposite}"</div>
+                    <div style="margin-top: 0.5rem;">${currentPair.word} ↔️ ${currentPair.opposite}</div>
+                `;
+                feedback.classList.add('show', 'incorrect');
+                wordCard.classList.add('incorrect');
+
+                pills.forEach(pill => {
+                    if (pill.textContent === selectedWord) {
+                        pill.classList.add('incorrect');
+                    } else if (pill.textContent === currentPair.opposite) {
+                        pill.classList.add('correct');
+                    }
+                });
+            }
+
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('max-streak').textContent = maxStreak;
+
+            nextButton.classList.add('show');
+            setTimeout(() => nextButton.classList.add('auto-advance'), 10);
+            autoAdvanceTimer = setTimeout(() => nextRound(), 3500);
+        }
+
+        function nextRound() {
+            const guessLayout = document.querySelector('.guess-layout');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+
+            guessLayout.classList.add('fade-out');
+            feedback.classList.add('fade-out');
+            nextButton.classList.add('fade-out');
+
+            setTimeout(() => {
+                feedback.classList.remove('fade-out');
+                nextButton.classList.remove('fade-out');
+                displayRound();
+
+                setTimeout(() => {
+                    guessLayout.classList.remove('fade-out');
+                    guessLayout.classList.add('fade-in');
+                    setTimeout(() => guessLayout.classList.remove('fade-in'), 400);
+                }, 50);
+            }, 300);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

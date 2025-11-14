@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plural or Singular?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="plural.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <h1 class="game-logo">🐶 Plural or Singular? 🐶🐶</h1>
+        </div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>One or Many?</h1>
+                <p class="subtitle">Learn singular and plural words!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card item-card" id="item-card">
+                        <div class="item-display" id="item-display">🐶</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <!-- Answer pills will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-link">← Back to Menu</a>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const items = [
+            { singular: 'cat', plural: 'cats', emoji: '🐱' },
+            { singular: 'dog', plural: 'dogs', emoji: '🐶' },
+            { singular: 'bird', plural: 'birds', emoji: '🐦' },
+            { singular: 'apple', plural: 'apples', emoji: '🍎' },
+            { singular: 'star', plural: 'stars', emoji: '⭐' },
+            { singular: 'book', plural: 'books', emoji: '📚' },
+            { singular: 'car', plural: 'cars', emoji: '🚗' },
+            { singular: 'flower', plural: 'flowers', emoji: '🌸' },
+            { singular: 'tree', plural: 'trees', emoji: '🌳' },
+            { singular: 'house', plural: 'houses', emoji: '🏠' },
+            { singular: 'ball', plural: 'balls', emoji: '⚽' },
+            { singular: 'fish', plural: 'fish', emoji: '🐟' },
+            { singular: 'cookie', plural: 'cookies', emoji: '🍪' },
+            { singular: 'balloon', plural: 'balloons', emoji: '🎈' },
+            { singular: 'heart', plural: 'hearts', emoji: '❤️' }
+        ];
+
+        let currentItem = null;
+        let currentCount = 1;
+        let streak = 0;
+        let maxStreak = 0;
+        let usedItems = new Set();
+        let autoAdvanceTimer = null;
+
+        const correctMessages = [
+            "⭐ Perfect! That's right!",
+            "🎉 Excellent work!",
+            "👏 Amazing! You got it!",
+            "🌟 Yes! Great job!",
+            "💚 Fantastic!",
+            "🎊 Brilliant!",
+            "✨ Correct! Super smart!",
+            "🏆 Outstanding!",
+            "💪 Well done!",
+            "🎯 Spot on!"
+        ];
+
+        const incorrectMessages = [
+            "💭 Not quite! The answer is",
+            "🤔 Good try! It should be",
+            "📚 Let's learn! The correct word is",
+            "💡 Almost! The answer is",
+            "🌱 Nice effort! It's",
+            "🎓 Keep learning! It's",
+            "🔍 Not this time! The answer is",
+            "📖 Don't worry! It should be",
+            "🧠 Learning time! The correct answer is",
+            "💫 Good guess! It's actually"
+        ];
+
+        function getRandomMessage(messages) {
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function getRandomItem() {
+            let attempts = 0;
+            while (attempts < 100) {
+                const randomIndex = Math.floor(Math.random() * items.length);
+                const item = items[randomIndex];
+                if (!usedItems.has(item.singular)) {
+                    usedItems.add(item.singular);
+                    return item;
+                }
+                attempts++;
+            }
+            usedItems.clear();
+            return items[Math.floor(Math.random() * items.length)];
+        }
+
+        function displayRound() {
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+
+            currentItem = getRandomItem();
+            currentCount = Math.floor(Math.random() * 4) + 1; // 1 to 4 items
+
+            // Display emojis
+            const display = document.getElementById('item-display');
+            display.textContent = currentItem.emoji.repeat(currentCount);
+
+            // Create answer options
+            const optionsContainer = document.getElementById('answer-options');
+            optionsContainer.innerHTML = '';
+
+            const isSingular = currentCount === 1;
+            const correctAnswer = isSingular ? `there is one ${currentItem.singular}` : `there are many ${currentItem.plural}`;
+            const wrongAnswer = isSingular ? `there are many ${currentItem.plural}` : `there is one ${currentItem.singular}`;
+
+            const options = [correctAnswer, wrongAnswer].sort(() => Math.random() - 0.5);
+
+            options.forEach(option => {
+                const pill = document.createElement('button');
+                pill.className = 'answer-pill';
+                pill.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+                pill.onclick = () => makeGuess(option);
+                optionsContainer.appendChild(pill);
+            });
+
+            document.getElementById('item-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('show', 'correct', 'incorrect');
+            const nextButton = document.getElementById('next-button');
+            nextButton.classList.remove('show', 'auto-advance');
+        }
+
+        function makeGuess(selectedWord) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+            const itemCard = document.getElementById('item-card');
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const isSingular = currentCount === 1;
+            const correctAnswer = isSingular ? `there is one ${currentItem.singular}` : `there are many ${currentItem.plural}`;
+            const correctAnswerDisplay = correctAnswer.charAt(0).toUpperCase() + correctAnswer.slice(1);
+            const isCorrect = selectedWord.toLowerCase() === correctAnswer;
+
+            if (isCorrect) {
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+
+                const explanation = currentCount === 1
+                    ? `1 item = singular (use "is")`
+                    : `${currentCount} items = plural (use "are")`;
+
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(correctMessages)}</div>
+                    <div style="margin-top: 0.5rem;">${explanation}</div>
+                `;
+                feedback.classList.add('show', 'correct');
+                itemCard.classList.add('correct');
+
+                pills.forEach(pill => {
+                    if (pill.textContent.toLowerCase() === selectedWord.toLowerCase()) {
+                        pill.classList.add('correct');
+                    }
+                });
+            } else {
+                streak = 0;
+
+                const explanation = currentCount === 1
+                    ? `1 item = singular (use "is")`
+                    : `${currentCount} items = plural (use "are")`;
+
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(incorrectMessages)} "${correctAnswerDisplay}"</div>
+                    <div style="margin-top: 0.5rem;">${explanation}</div>
+                `;
+                feedback.classList.add('show', 'incorrect');
+                itemCard.classList.add('incorrect');
+
+                pills.forEach(pill => {
+                    if (pill.textContent.toLowerCase() === selectedWord.toLowerCase()) {
+                        pill.classList.add('incorrect');
+                    } else if (pill.textContent.toLowerCase() === correctAnswer) {
+                        pill.classList.add('correct');
+                    }
+                });
+            }
+
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('max-streak').textContent = maxStreak;
+
+            nextButton.classList.add('show');
+            setTimeout(() => nextButton.classList.add('auto-advance'), 10);
+            autoAdvanceTimer = setTimeout(() => nextRound(), 3500);
+        }
+
+        function nextRound() {
+            const guessLayout = document.querySelector('.guess-layout');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+
+            guessLayout.classList.add('fade-out');
+            feedback.classList.add('fade-out');
+            nextButton.classList.add('fade-out');
+
+            setTimeout(() => {
+                feedback.classList.remove('fade-out');
+                nextButton.classList.remove('fade-out');
+                displayRound();
+
+                setTimeout(() => {
+                    guessLayout.classList.remove('fade-out');
+                    guessLayout.classList.add('fade-in');
+                    setTimeout(() => guessLayout.classList.remove('fade-in'), 400);
+                }, 50);
+            }, 300);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

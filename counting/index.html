@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Count & Learn</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="counting.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <h1 class="game-logo">🔢 Count & Learn 🔢</h1>
+        </div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>How many can you count?</h1>
+                <p class="subtitle">Count the items and learn number words!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card count-card" id="count-card">
+                        <div class="count-display" id="count-display">🍎🍎🍎</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <!-- Answer pills will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-link">← Back to Menu</a>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const items = [
+            { emoji: '🍎', name: 'apples' },
+            { emoji: '⭐', name: 'stars' },
+            { emoji: '🎈', name: 'balloons' },
+            { emoji: '🌸', name: 'flowers' },
+            { emoji: '🍪', name: 'cookies' },
+            { emoji: '❤️', name: 'hearts' },
+            { emoji: '🐝', name: 'bees' },
+            { emoji: '🦋', name: 'butterflies' },
+            { emoji: '🌼', name: 'flowers' },
+            { emoji: '🍓', name: 'strawberries' },
+            { emoji: '🎁', name: 'gifts' },
+            { emoji: '🌟', name: 'stars' },
+            { emoji: '🐠', name: 'fish' },
+            { emoji: '🍋', name: 'lemons' },
+            { emoji: '🎨', name: 'paint sets' }
+        ];
+
+        const numberWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+
+        let currentItem = null;
+        let currentCount = 0;
+        let streak = 0;
+        let maxStreak = 0;
+        let autoAdvanceTimer = null;
+
+        const correctMessages = [
+            "⭐ Perfect counting!",
+            "🎉 Excellent! That's right!",
+            "👏 Amazing job!",
+            "🌟 Yes! You counted correctly!",
+            "💚 Fantastic work!",
+            "🎊 Brilliant counting!",
+            "✨ Correct! You're so smart!",
+            "🏆 Outstanding!",
+            "💪 Well done!",
+            "🎯 Spot on!"
+        ];
+
+        const incorrectMessages = [
+            "💭 Let's count again! It's",
+            "🤔 Good try! The answer is",
+            "📚 Let's learn! There are",
+            "💡 Almost! It's actually",
+            "🌱 Nice effort! The correct count is",
+            "🎓 Keep learning! It's",
+            "🔍 Not this time! There are",
+            "📖 Don't worry! The answer is",
+            "🧠 Learning time! It's",
+            "💫 Good guess! The correct answer is"
+        ];
+
+        function getRandomMessage(messages) {
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function getRandomItem() {
+            return items[Math.floor(Math.random() * items.length)];
+        }
+
+        function getWrongAnswers(correctNum) {
+            const wrong = [];
+            while (wrong.length < 2) {
+                const num = Math.floor(Math.random() * 11);
+                if (num !== correctNum && !wrong.includes(num)) {
+                    wrong.push(num);
+                }
+            }
+            return wrong;
+        }
+
+        function displayRound() {
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+
+            currentItem = getRandomItem();
+            currentCount = Math.floor(Math.random() * 10) + 1; // 1 to 10 items
+
+            // Display emojis
+            const display = document.getElementById('count-display');
+            display.textContent = currentItem.emoji.repeat(currentCount);
+
+            // Create answer options
+            const optionsContainer = document.getElementById('answer-options');
+            optionsContainer.innerHTML = '';
+
+            const wrongAnswers = getWrongAnswers(currentCount);
+            const options = [numberWords[currentCount], ...wrongAnswers.map(n => numberWords[n])];
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(option => {
+                const pill = document.createElement('button');
+                pill.className = 'answer-pill';
+                pill.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+                pill.onclick = () => makeGuess(option);
+                optionsContainer.appendChild(pill);
+            });
+
+            document.getElementById('count-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('show', 'correct', 'incorrect');
+            const nextButton = document.getElementById('next-button');
+            nextButton.classList.remove('show', 'auto-advance');
+        }
+
+        function makeGuess(selectedWord) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+            const countCard = document.getElementById('count-card');
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const correctAnswer = numberWords[currentCount];
+            const isCorrect = selectedWord === correctAnswer;
+
+            if (isCorrect) {
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(correctMessages)}</div>
+                    <div style="margin-top: 0.5rem;">${currentCount} ${currentItem.name} = "${correctAnswer}"</div>
+                `;
+                feedback.classList.add('show', 'correct');
+                countCard.classList.add('correct');
+
+                pills.forEach(pill => {
+                    if (pill.textContent === selectedWord) {
+                        pill.classList.add('correct');
+                    }
+                });
+            } else {
+                streak = 0;
+
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(incorrectMessages)} "${correctAnswer}"</div>
+                    <div style="margin-top: 0.5rem;">${currentCount} ${currentItem.name} = "${correctAnswer}"</div>
+                `;
+                feedback.classList.add('show', 'incorrect');
+                countCard.classList.add('incorrect');
+
+                pills.forEach(pill => {
+                    if (pill.textContent === selectedWord) {
+                        pill.classList.add('incorrect');
+                    } else if (pill.textContent === correctAnswer) {
+                        pill.classList.add('correct');
+                    }
+                });
+            }
+
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('max-streak').textContent = maxStreak;
+
+            nextButton.classList.add('show');
+            setTimeout(() => nextButton.classList.add('auto-advance'), 10);
+            autoAdvanceTimer = setTimeout(() => nextRound(), 3500);
+        }
+
+        function nextRound() {
+            const guessLayout = document.querySelector('.guess-layout');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+
+            guessLayout.classList.add('fade-out');
+            feedback.classList.add('fade-out');
+            nextButton.classList.add('fade-out');
+
+            setTimeout(() => {
+                feedback.classList.remove('fade-out');
+                nextButton.classList.remove('fade-out');
+                displayRound();
+
+                setTimeout(() => {
+                    guessLayout.classList.remove('fade-out');
+                    guessLayout.classList.add('fade-in');
+                    setTimeout(() => guessLayout.classList.remove('fade-in'), 400);
+                }, 50);
+            }, 300);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

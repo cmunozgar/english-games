@@ -1,0 +1,99 @@
+/* Plural Game Styles */
+
+.game-logo {
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+    color: var(--color-brand-dark);
+    font-size: 2em;
+    font-weight: 600;
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 0.9em;
+    color: var(--color-neutral-700);
+    font-weight: 400;
+}
+
+.item-card {
+    text-align: center;
+    padding: var(--space-xl);
+}
+
+.item-display {
+    font-size: 5rem;
+    line-height: 1.3;
+    letter-spacing: 0.5rem;
+}
+
+.answer-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.answer-pill {
+    padding: var(--space-sm) var(--space-lg);
+    background: white;
+    border: 2px solid var(--color-neutral-100);
+    border-radius: var(--radius-full);
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--color-brand-dark);
+    cursor: pointer;
+    transition: all var(--transition);
+    min-width: 280px;
+    text-align: center;
+}
+
+.answer-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-brand-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.answer-pill.correct {
+    border-color: var(--color-success) !important;
+    background: var(--color-success) !important;
+    color: white !important;
+}
+
+.answer-pill.incorrect {
+    border-color: var(--color-error) !important;
+    background: var(--color-error) !important;
+    color: white !important;
+}
+
+.answer-pill.disabled {
+    pointer-events: none;
+}
+
+.answer-pill.disabled:not(.correct):not(.incorrect) {
+    opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+    .game-logo {
+        font-size: 1.5em;
+    }
+
+    .item-display {
+        font-size: 4rem;
+    }
+
+    .answer-pill {
+        min-width: 100%;
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-logo {
+        font-size: 1.3em;
+    }
+
+    .item-display {
+        font-size: 3rem;
+        letter-spacing: 0.3rem;
+    }
+}
