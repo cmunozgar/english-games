@@ -1,0 +1,122 @@
+/* Processed or Natural Game Specific Styles */
+
+.game-logo {
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+    color: var(--color-brand-dark);
+    font-size: 2em;
+    font-weight: 600;
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 0.9em;
+    color: var(--color-neutral-700);
+    font-weight: 400;
+}
+
+/* Food card - centered content */
+.food-card {
+    text-align: center;
+}
+
+/* Food emoji displayed in the card - large and centered */
+.food-emoji {
+    font-size: 6rem;
+    margin-bottom: var(--space-sm);
+}
+
+.food-name {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--color-brand-dark);
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Answer options - matching healthy game layout */
+.answer-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.answer-pill {
+    padding: var(--space-sm) var(--space-lg);
+    border: 2px solid;
+    border-radius: var(--radius-full);
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    min-width: 280px;
+    text-align: center;
+}
+
+/* Both buttons - neutral styling */
+.answer-pill.natural,
+.answer-pill.processed {
+    background: white;
+    border-color: var(--color-neutral-100);
+    color: var(--color-brand-dark);
+}
+
+.answer-pill.natural:hover,
+.answer-pill.processed:hover {
+    border-color: var(--color-brand-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.answer-pill.correct {
+    border-color: var(--color-success) !important;
+    background: var(--color-success) !important;
+    color: white !important;
+}
+
+.answer-pill.incorrect {
+    border-color: var(--color-error) !important;
+    background: var(--color-error) !important;
+    color: white !important;
+}
+
+.answer-pill.disabled {
+    pointer-events: none;
+}
+
+.answer-pill.disabled:not(.correct):not(.incorrect) {
+    opacity: 0.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-logo {
+        font-size: 1.5em;
+    }
+
+    .food-emoji {
+        font-size: 5rem;
+    }
+
+    .food-name {
+        font-size: 1.2em;
+    }
+
+    .answer-pill {
+        min-width: 100%;
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-logo {
+        font-size: 1.3em;
+    }
+
+    .food-emoji {
+        font-size: 4rem;
+    }
+
+    .food-name {
+        font-size: 1em;
+    }
+}

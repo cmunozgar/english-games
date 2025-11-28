@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processed or Natural?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="origins.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container with Logo + Card -->
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <h1 class="game-logo">🏭 Processed or Natural? 🌿</h1>
+        </div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Is this food processed?</h1>
+                <p class="subtitle">Learn about natural and processed foods!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card food-card" id="food-card">
+                        <div class="food-emoji" id="food-emoji">🍎</div>
+                        <div class="food-name" id="food-name">Apple</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <button class="answer-pill natural" onclick="makeGuess(false)">
+                            🌿 Natural
+                        </button>
+                        <button class="answer-pill processed" onclick="makeGuess(true)">
+                            🏭 Processed
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-link">← Back to Menu</a>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        // Food items with processed status
+        const foodItems = [
+            // Natural foods (not processed)
+            { emoji: '🍎', name: 'Apple', processed: false, info: 'Apples grow on trees and are eaten fresh!' },
+            { emoji: '🍌', name: 'Banana', processed: false, info: 'Bananas are picked from banana plants and eaten fresh!' },
+            { emoji: '🥕', name: 'Carrot', processed: false, info: 'Carrots are vegetables pulled straight from the ground!' },
+            { emoji: '🍅', name: 'Tomato', processed: false, info: 'Tomatoes grow on vines and can be eaten right away!' },
+            { emoji: '🥬', name: 'Lettuce', processed: false, info: 'Lettuce is a leafy green picked fresh from the garden!' },
+            { emoji: '🍇', name: 'Grapes', processed: false, info: 'Grapes grow on vines and are eaten fresh!' },
+            { emoji: '🍊', name: 'Orange', processed: false, info: 'Oranges grow on trees and are eaten fresh!' },
+            { emoji: '🥒', name: 'Cucumber', processed: false, info: 'Cucumbers are vegetables eaten fresh from the plant!' },
+            { emoji: '🍓', name: 'Strawberry', processed: false, info: 'Strawberries are picked and eaten fresh!' },
+            { emoji: '🥦', name: 'Broccoli', processed: false, info: 'Broccoli is a vegetable eaten fresh or lightly cooked!' },
+            { emoji: '🍑', name: 'Peach', processed: false, info: 'Peaches grow on trees and are eaten fresh!' },
+            { emoji: '🌽', name: 'Corn on the Cob', processed: false, info: 'Corn on the cob is eaten right off the stalk!' },
+            { emoji: '🥚', name: 'Egg', processed: false, info: 'Eggs come directly from chickens!' },
+            { emoji: '🥛', name: 'Milk', processed: false, info: 'Milk comes directly from cows!' },
+            { emoji: '🍯', name: 'Honey', processed: false, info: 'Honey is made by bees and collected naturally!' },
+            { emoji: '🥜', name: 'Peanuts', processed: false, info: 'Peanuts are harvested and can be eaten raw or roasted!' },
+            { emoji: '🐟', name: 'Fresh Fish', processed: false, info: 'Fresh fish is caught and eaten without processing!' },
+            { emoji: '🍗', name: 'Chicken', processed: false, info: 'Fresh chicken meat comes directly from the animal!' },
+            { emoji: '🥩', name: 'Fresh Steak', processed: false, info: 'Fresh steak is cut directly from the cow!' },
+
+            // Processed foods
+            { emoji: '🍕', name: 'Pizza', processed: true, info: 'Pizza is made in factories with many processed ingredients!' },
+            { emoji: '🍔', name: 'Hamburger', processed: true, info: 'Hamburgers have processed buns, patties, and sauces!' },
+            { emoji: '🍟', name: 'French Fries', processed: true, info: 'French fries are cut, frozen, and fried in factories!' },
+            { emoji: '🌭', name: 'Hot Dog', processed: true, info: 'Hot dogs are made from processed meat mixtures!' },
+            { emoji: '🍩', name: 'Donut', processed: true, info: 'Donuts are made with processed flour, sugar, and oils!' },
+            { emoji: '🍪', name: 'Cookie', processed: true, info: 'Cookies are baked with processed ingredients!' },
+            { emoji: '🍰', name: 'Cake', processed: true, info: 'Cake is made with processed flour, sugar, and more!' },
+            { emoji: '🍫', name: 'Chocolate Bar', processed: true, info: 'Chocolate bars go through many factory steps!' },
+            { emoji: '🍬', name: 'Candy', processed: true, info: 'Candy is made in factories with lots of sugar!' },
+            { emoji: '🥤', name: 'Soda', processed: true, info: 'Soda is made in factories with sugar and chemicals!' },
+            { emoji: '🍦', name: 'Ice Cream', processed: true, info: 'Ice cream is processed with sugar, cream, and additives!' },
+            { emoji: '🧁', name: 'Cupcake', processed: true, info: 'Cupcakes are baked with processed ingredients!' },
+            { emoji: '🥐', name: 'Croissant', processed: true, info: 'Croissants are made with processed flour and butter!' },
+            { emoji: '🍞', name: 'Bread', processed: true, info: 'Bread is made by processing wheat into flour and baking it!' },
+            { emoji: '🧀', name: 'Cheese', processed: true, info: 'Cheese is made by processing milk with enzymes!' },
+            { emoji: '🥓', name: 'Bacon', processed: true, info: 'Bacon is cured and smoked in a factory!' },
+            { emoji: '🍝', name: 'Pasta', processed: true, info: 'Pasta is made by processing wheat into shapes!' },
+            { emoji: '🥣', name: 'Cereal', processed: true, info: 'Cereal is made in factories from processed grains!' },
+            { emoji: '🍭', name: 'Lollipop', processed: true, info: 'Lollipops are made in factories from sugar!' },
+            { emoji: '🥫', name: 'Canned Food', processed: true, info: 'Canned food is cooked and sealed in factories!' },
+            { emoji: '🧃', name: 'Juice Box', processed: true, info: 'Juice boxes contain processed and sweetened juice!' },
+            { emoji: '🍿', name: 'Popcorn', processed: true, info: 'Packaged popcorn has added butter, salt, and flavors!' },
+            { emoji: '🥨', name: 'Pretzel', processed: true, info: 'Pretzels are made from processed dough and salt!' }
+        ];
+
+        let currentFood = null;
+        let streak = 0;
+        let maxStreak = 0;
+        let usedFoods = new Set();
+        let autoAdvanceTimer = null;
+
+        // Fun messages for different outcomes
+        const correctMessages = [
+            "⭐ Amazing! You're right!",
+            "🎉 Perfect! Great job!",
+            "👏 Excellent work!",
+            "🌟 You got it!",
+            "💚 Fantastic!",
+            "🎊 Super smart!",
+            "✨ Well done!",
+            "🏆 You're a food expert!",
+            "💪 Great choice!",
+            "🎯 Spot on!"
+        ];
+
+        const incorrectMessages = [
+            "💭 Oops! Let's learn:",
+            "🤔 Not quite! Here's why:",
+            "📚 Let's discover:",
+            "💡 Good try! Now you know:",
+            "🌱 That's okay! Learn this:",
+            "🎓 Nice effort! Remember:",
+            "🔍 Almost! Here's the truth:",
+            "📖 Don't worry! Now you know:",
+            "🧠 Learning time:",
+            "💫 Great guess! Actually:"
+        ];
+
+        function getRandomMessage(messages) {
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            return messages[randomIndex];
+        }
+
+        function getRandomFood() {
+            if (foodItems.length === 0) {
+                console.error("No food items available");
+                return null;
+            }
+
+            let attempts = 0;
+            const maxAttempts = 100;
+
+            while (attempts < maxAttempts) {
+                const randomIndex = Math.floor(Math.random() * foodItems.length);
+                const food = foodItems[randomIndex];
+
+                if (!usedFoods.has(food.name)) {
+                    usedFoods.add(food.name);
+                    return food;
+                }
+                attempts++;
+            }
+
+            // If we've seen all foods, reset and return a new food
+            usedFoods.clear();
+            const randomIndex = Math.floor(Math.random() * foodItems.length);
+            return foodItems[randomIndex];
+        }
+
+        function displayRound() {
+            // Clear any existing auto-advance timer
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+
+            currentFood = getRandomFood();
+
+            // Display food
+            document.getElementById('food-emoji').textContent = currentFood.emoji;
+            document.getElementById('food-name').textContent = currentFood.name;
+
+            // Reset states
+            document.getElementById('food-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
+            const pills = document.querySelectorAll('.answer-pill');
+            pills.forEach(pill => {
+                pill.classList.remove('disabled', 'correct', 'incorrect');
+            });
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('show', 'correct', 'incorrect');
+            const nextButton = document.getElementById('next-button');
+            nextButton.classList.remove('show', 'auto-advance');
+        }
+
+        function makeGuess(selectedProcessed) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+            const foodCard = document.getElementById('food-card');
+
+            // Disable all pills
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const isCorrect = selectedProcessed === currentFood.processed;
+
+            if (isCorrect) {
+                streak++;
+                if (streak > maxStreak) {
+                    maxStreak = streak;
+                }
+
+                // Combine message and info
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(correctMessages)}</div>
+                    <div style="margin-top: 0.5rem;">${currentFood.info}</div>
+                `;
+                feedback.classList.add('show', 'correct');
+                foodCard.classList.add('correct');
+
+                // Highlight correct pill
+                const pillsArray = Array.from(pills);
+                const selectedIndex = selectedProcessed ? 1 : 0;
+                pillsArray[selectedIndex].classList.add('correct');
+            } else {
+                streak = 0;
+
+                // Combine message and info
+                feedback.innerHTML = `
+                    <div>${getRandomMessage(incorrectMessages)}</div>
+                    <div style="margin-top: 0.5rem;">${currentFood.info}</div>
+                `;
+                feedback.classList.add('show', 'incorrect');
+                foodCard.classList.add('incorrect');
+
+                // Highlight correct and incorrect pills
+                const pillsArray = Array.from(pills);
+                const selectedIndex = selectedProcessed ? 1 : 0;
+                const correctIndex = currentFood.processed ? 1 : 0;
+                pillsArray[selectedIndex].classList.add('incorrect');
+                pillsArray[correctIndex].classList.add('correct');
+            }
+
+            // Update score display
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('max-streak').textContent = maxStreak;
+
+            // Show next button with auto-advance
+            nextButton.classList.add('show');
+
+            // Start auto-advance timer and animation
+            setTimeout(() => {
+                nextButton.classList.add('auto-advance');
+            }, 10);
+
+            autoAdvanceTimer = setTimeout(() => {
+                nextRound();
+            }, 3500);
+        }
+
+        function nextRound() {
+            // Fade out current content
+            const guessLayout = document.querySelector('.guess-layout');
+            const feedback = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+
+            guessLayout.classList.add('fade-out');
+            feedback.classList.add('fade-out');
+            nextButton.classList.add('fade-out');
+
+            // Wait for fade out animation, then load new round
+            setTimeout(() => {
+                // Remove fade-out classes
+                feedback.classList.remove('fade-out');
+                nextButton.classList.remove('fade-out');
+
+                displayRound();
+
+                // Fade in new content
+                setTimeout(() => {
+                    guessLayout.classList.remove('fade-out');
+                    guessLayout.classList.add('fade-in');
+
+                    // Remove animation class after animation completes
+                    setTimeout(() => {
+                        guessLayout.classList.remove('fade-in');
+                    }, 400);
+                }, 50);
+            }, 300);
+        }
+
+        // Initialize game
+        displayRound();
+    </script>
+</body>
+</html>

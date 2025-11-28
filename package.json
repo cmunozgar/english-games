@@ -1,0 +1,21 @@
+{
+  "name": "english-games",
+  "version": "1.0.0",
+  "description": "Fun games to practice English!",
+  "scripts": {
+    "start": "gulp",
+    "serve": "gulp serve"
+  },
+  "keywords": [
+    "english",
+    "learning",
+    "games",
+    "education"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^3.0.2",
+    "gulp": "^5.0.0"
+  }
+}

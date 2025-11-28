@@ -151,7 +151,8 @@
             options.forEach(option => {
                 const pill = document.createElement('button');
                 pill.className = 'answer-pill';
-                pill.textContent = option;
+                pill.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+                pill.dataset.word = option;
                 pill.onclick = () => makeGuess(option);
                 optionsContainer.appendChild(pill);
             });
@@ -186,7 +187,7 @@
                 weatherCard.classList.add('correct');
 
                 pills.forEach(pill => {
-                    if (pill.textContent === selectedWord) {
+                    if (pill.dataset.word === selectedWord) {
                         pill.classList.add('correct');
                     }
                 });
@@ -202,9 +203,9 @@
                 weatherCard.classList.add('incorrect');
 
                 pills.forEach(pill => {
-                    if (pill.textContent === selectedWord) {
+                    if (pill.dataset.word === selectedWord) {
                         pill.classList.add('incorrect');
-                    } else if (pill.textContent === currentWeather.word) {
+                    } else if (pill.dataset.word === currentWeather.word) {
                         pill.classList.add('correct');
                     }
                 });
