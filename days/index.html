@@ -17,10 +17,8 @@
 
     <!-- Main Container -->
     <div class="main-container">
-        <!-- Logo -->
-        <div class="logo-container">
-            <h1 class="game-logo">📅 Days of the Week 📅</h1>
-        </div>
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="📅 Days of the Week 📅"></div>
 
         <!-- Game Card -->
         <div class="game-container">
@@ -51,211 +49,59 @@
             </div>
         </div>
 
-        <a href="../index.html" class="back-link">← Back to Menu</a>
     </div>
 
     <script src="../shared/components.js"></script>
     <script>
         const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const dayEmojis = { Monday: '💼', Tuesday: '📝', Wednesday: '🐫', Thursday: '⚡', Friday: '🎉', Saturday: '🏖️', Sunday: '😴' };
+        const positions = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
 
-        const dayEmojis = {
-            'Monday': '💼',
-            'Tuesday': '📝',
-            'Wednesday': '🐫',
-            'Thursday': '⚡',
-            'Friday': '🎉',
-            'Saturday': '🏖️',
-            'Sunday': '😴'
-        };
-
-        const questionTypes = [
-            { type: 'after', text: 'What comes AFTER {day}?' },
-            { type: 'before', text: 'What comes BEFORE {day}?' },
-            { type: 'order', text: 'Which day is {position}?' }
-        ];
-
+        const game = createGameState();
         let currentQuestion = null;
-        let streak = 0;
-        let maxStreak = 0;
-        let autoAdvanceTimer = null;
-
-        const correctMessages = [
-            "⭐ Perfect! That's right!",
-            "🎉 Excellent work!",
-            "👏 Amazing! You got it!",
-            "🌟 Yes! Great job!",
-            "💚 Fantastic!",
-            "🎊 Brilliant!",
-            "✨ Correct!",
-            "🏆 Outstanding!",
-            "💪 Well done!",
-            "🎯 Spot on!"
-        ];
-
-        const incorrectMessages = [
-            "💭 Not quite! The answer is",
-            "🤔 Good try! It's actually",
-            "📚 Let's learn! The correct answer is",
-            "💡 Almost! It's",
-            "🌱 Nice effort! The answer is",
-            "🎓 Keep learning! It's",
-            "🔍 Not this time! The correct answer is",
-            "📖 Don't worry! It's",
-            "🧠 Learning time! The answer is",
-            "💫 Good guess! It's actually"
-        ];
-
-        function getRandomMessage(messages) {
-            return messages[Math.floor(Math.random() * messages.length)];
-        }
 
         function generateQuestion() {
-            const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-            let correctAnswer, dayIndex, questionText;
+            const types = ['after', 'before', 'order'];
+            const type = types[Math.floor(Math.random() * types.length)];
 
-            if (questionType.type === 'after') {
-                dayIndex = Math.floor(Math.random() * 6); // 0-5 (not Sunday)
-                const day = daysOfWeek[dayIndex];
-                correctAnswer = daysOfWeek[dayIndex + 1];
-                questionText = questionType.text.replace('{day}', day);
-            } else if (questionType.type === 'before') {
-                dayIndex = Math.floor(Math.random() * 6) + 1; // 1-6 (not Monday)
-                const day = daysOfWeek[dayIndex];
-                correctAnswer = daysOfWeek[dayIndex - 1];
-                questionText = questionType.text.replace('{day}', day);
-            } else { // order
-                dayIndex = Math.floor(Math.random() * 7);
-                correctAnswer = daysOfWeek[dayIndex];
-                const positions = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
-                questionText = questionType.text.replace('{position}', positions[dayIndex]);
+            if (type === 'after') {
+                const idx = Math.floor(Math.random() * 6);
+                return { text: `What comes AFTER ${daysOfWeek[idx]}?`, answer: daysOfWeek[idx + 1] };
+            } else if (type === 'before') {
+                const idx = Math.floor(Math.random() * 6) + 1;
+                return { text: `What comes BEFORE ${daysOfWeek[idx]}?`, answer: daysOfWeek[idx - 1] };
+            } else {
+                const idx = Math.floor(Math.random() * 7);
+                return { text: `Which day is ${positions[idx]}?`, answer: daysOfWeek[idx] };
             }
-
-            return { questionText, correctAnswer, emoji: dayEmojis[correctAnswer] };
-        }
-
-        function getWrongDays(correct) {
-            const wrong = [];
-            while (wrong.length < 2) {
-                const randomDay = daysOfWeek[Math.floor(Math.random() * daysOfWeek.length)];
-                if (randomDay !== correct && !wrong.includes(randomDay)) {
-                    wrong.push(randomDay);
-                }
-            }
-            return wrong;
         }
 
         function displayRound() {
-            if (autoAdvanceTimer) {
-                clearTimeout(autoAdvanceTimer);
-                autoAdvanceTimer = null;
-            }
-
+            game.clearTimer();
             currentQuestion = generateQuestion();
 
             document.getElementById('day-emoji').textContent = '📅';
-            document.getElementById('question-text').textContent = currentQuestion.questionText;
+            document.getElementById('question-text').textContent = currentQuestion.text;
 
-            // Create answer options
-            const optionsContainer = document.getElementById('answer-options');
-            optionsContainer.innerHTML = '';
-
-            const wrongDays = getWrongDays(currentQuestion.correctAnswer);
-            const options = [currentQuestion.correctAnswer, ...wrongDays];
-            options.sort(() => Math.random() - 0.5);
-
-            options.forEach(option => {
-                const pill = document.createElement('button');
-                pill.className = 'answer-pill';
-                pill.textContent = option;
-                pill.onclick = () => makeGuess(option);
-                optionsContainer.appendChild(pill);
-            });
-
-            document.getElementById('day-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
-            const feedback = document.getElementById('feedback');
-            feedback.classList.remove('show', 'correct', 'incorrect');
-            const nextButton = document.getElementById('next-button');
-            nextButton.classList.remove('show', 'auto-advance');
+            const wrong = getWrongAnswers(daysOfWeek, currentQuestion.answer, d => d, 2);
+            const options = shuffleArray([currentQuestion.answer, ...wrong]);
+            createAnswerPills(options, o => o, o => o, makeGuess);
+            resetRoundState('day-card');
         }
 
-        function makeGuess(selectedDay) {
-            const pills = document.querySelectorAll('.answer-pill');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-            const dayCard = document.getElementById('day-card');
+        function makeGuess(selected) {
+            const isCorrect = selected === currentQuestion.answer;
+            document.getElementById('day-emoji').textContent = dayEmojis[currentQuestion.answer];
 
-            pills.forEach(pill => pill.classList.add('disabled'));
-
-            const isCorrect = selectedDay === currentQuestion.correctAnswer;
-
-            // Change emoji to the correct answer's emoji
-            document.getElementById('day-emoji').textContent = currentQuestion.emoji;
-
-            if (isCorrect) {
-                streak++;
-                if (streak > maxStreak) maxStreak = streak;
-
-                const weekOrder = daysOfWeek.join(' → ');
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(correctMessages)}</div>
-                    <div style="margin-top: 0.5rem; font-size: 0.9em;">${weekOrder}</div>
-                `;
-                feedback.classList.add('show', 'correct');
-                dayCard.classList.add('correct');
-
-                pills.forEach(pill => {
-                    if (pill.textContent === selectedDay) {
-                        pill.classList.add('correct');
-                    }
-                });
-            } else {
-                streak = 0;
-
-                const weekOrder = daysOfWeek.join(' → ');
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(incorrectMessages)} "${currentQuestion.correctAnswer}"</div>
-                    <div style="margin-top: 0.5rem; font-size: 0.9em;">${weekOrder}</div>
-                `;
-                feedback.classList.add('show', 'incorrect');
-                dayCard.classList.add('incorrect');
-
-                pills.forEach(pill => {
-                    if (pill.textContent === selectedDay) {
-                        pill.classList.add('incorrect');
-                    } else if (pill.textContent === currentQuestion.correctAnswer) {
-                        pill.classList.add('correct');
-                    }
-                });
-            }
-
-            document.getElementById('streak').textContent = streak;
-            document.getElementById('max-streak').textContent = maxStreak;
-
-            nextButton.classList.add('show');
-            setTimeout(() => nextButton.classList.add('auto-advance'), 10);
-            autoAdvanceTimer = setTimeout(() => nextRound(), 3500);
+            const weekOrder = daysOfWeek.join(' → ');
+            markAnswerPills(selected, currentQuestion.answer);
+            showFeedback(isCorrect, `<span style="font-size: 0.9em;">${weekOrder}</span>`, 'day-card');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
         }
 
         function nextRound() {
-            const guessLayout = document.querySelector('.guess-layout');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-
-            guessLayout.classList.add('fade-out');
-            feedback.classList.add('fade-out');
-            nextButton.classList.add('fade-out');
-
-            setTimeout(() => {
-                feedback.classList.remove('fade-out');
-                nextButton.classList.remove('fade-out');
-                displayRound();
-
-                setTimeout(() => {
-                    guessLayout.classList.remove('fade-out');
-                    guessLayout.classList.add('fade-in');
-                    setTimeout(() => guessLayout.classList.remove('fade-in'), 400);
-                }, 50);
-            }, 300);
+            transitionToNextRound(displayRound);
         }
 
         displayRound();

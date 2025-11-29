@@ -17,10 +17,8 @@
 
     <!-- Main Container -->
     <div class="main-container">
-        <!-- Logo -->
-        <div class="logo-container">
-            <h1 class="game-logo">🐶 Plural or Singular? 🐶🐶</h1>
-        </div>
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🐶 Plural or Singular? 🐶🐶"></div>
 
         <!-- Game Card -->
         <div class="game-container">
@@ -49,8 +47,6 @@
                 <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
             </div>
         </div>
-
-        <a href="../index.html" class="back-link">← Back to Menu</a>
     </div>
 
     <script src="../shared/components.js"></script>
@@ -73,180 +69,42 @@
             { singular: 'heart', plural: 'hearts', emoji: '❤️' }
         ];
 
+        const game = createGameState();
         let currentItem = null;
         let currentCount = 1;
-        let streak = 0;
-        let maxStreak = 0;
-        let usedItems = new Set();
-        let autoAdvanceTimer = null;
-
-        const correctMessages = [
-            "⭐ Perfect! That's right!",
-            "🎉 Excellent work!",
-            "👏 Amazing! You got it!",
-            "🌟 Yes! Great job!",
-            "💚 Fantastic!",
-            "🎊 Brilliant!",
-            "✨ Correct! Super smart!",
-            "🏆 Outstanding!",
-            "💪 Well done!",
-            "🎯 Spot on!"
-        ];
-
-        const incorrectMessages = [
-            "💭 Not quite! The answer is",
-            "🤔 Good try! It should be",
-            "📚 Let's learn! The correct word is",
-            "💡 Almost! The answer is",
-            "🌱 Nice effort! It's",
-            "🎓 Keep learning! It's",
-            "🔍 Not this time! The answer is",
-            "📖 Don't worry! It should be",
-            "🧠 Learning time! The correct answer is",
-            "💫 Good guess! It's actually"
-        ];
-
-        function getRandomMessage(messages) {
-            return messages[Math.floor(Math.random() * messages.length)];
-        }
-
-        function getRandomItem() {
-            let attempts = 0;
-            while (attempts < 100) {
-                const randomIndex = Math.floor(Math.random() * items.length);
-                const item = items[randomIndex];
-                if (!usedItems.has(item.singular)) {
-                    usedItems.add(item.singular);
-                    return item;
-                }
-                attempts++;
-            }
-            usedItems.clear();
-            return items[Math.floor(Math.random() * items.length)];
-        }
 
         function displayRound() {
-            if (autoAdvanceTimer) {
-                clearTimeout(autoAdvanceTimer);
-                autoAdvanceTimer = null;
-            }
+            game.clearTimer();
+            currentItem = getRandomItem(items, game.usedItems, i => i.singular);
+            currentCount = Math.floor(Math.random() * 4) + 1;
 
-            currentItem = getRandomItem();
-            currentCount = Math.floor(Math.random() * 4) + 1; // 1 to 4 items
-
-            // Display emojis
-            const display = document.getElementById('item-display');
-            display.textContent = currentItem.emoji.repeat(currentCount);
-
-            // Create answer options
-            const optionsContainer = document.getElementById('answer-options');
-            optionsContainer.innerHTML = '';
+            document.getElementById('item-display').textContent = currentItem.emoji.repeat(currentCount);
 
             const isSingular = currentCount === 1;
             const correctAnswer = isSingular ? `there is one ${currentItem.singular}` : `there are many ${currentItem.plural}`;
             const wrongAnswer = isSingular ? `there are many ${currentItem.plural}` : `there is one ${currentItem.singular}`;
+            const options = shuffleArray([correctAnswer, wrongAnswer]);
 
-            const options = [correctAnswer, wrongAnswer].sort(() => Math.random() - 0.5);
-
-            options.forEach(option => {
-                const pill = document.createElement('button');
-                pill.className = 'answer-pill';
-                pill.textContent = option.charAt(0).toUpperCase() + option.slice(1);
-                pill.onclick = () => makeGuess(option);
-                optionsContainer.appendChild(pill);
-            });
-
-            document.getElementById('item-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
-            const feedback = document.getElementById('feedback');
-            feedback.classList.remove('show', 'correct', 'incorrect');
-            const nextButton = document.getElementById('next-button');
-            nextButton.classList.remove('show', 'auto-advance');
+            createAnswerPills(options, o => o.charAt(0).toUpperCase() + o.slice(1), o => o, makeGuess);
+            resetRoundState('item-card');
         }
 
-        function makeGuess(selectedWord) {
-            const pills = document.querySelectorAll('.answer-pill');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-            const itemCard = document.getElementById('item-card');
-
-            pills.forEach(pill => pill.classList.add('disabled'));
-
+        function makeGuess(selectedAnswer) {
             const isSingular = currentCount === 1;
             const correctAnswer = isSingular ? `there is one ${currentItem.singular}` : `there are many ${currentItem.plural}`;
-            const correctAnswerDisplay = correctAnswer.charAt(0).toUpperCase() + correctAnswer.slice(1);
-            const isCorrect = selectedWord.toLowerCase() === correctAnswer;
+            const isCorrect = selectedAnswer === correctAnswer;
+            const explanation = currentCount === 1
+                ? `1 item = singular (use "is")`
+                : `${currentCount} items = plural (use "are")`;
 
-            if (isCorrect) {
-                streak++;
-                if (streak > maxStreak) maxStreak = streak;
-
-                const explanation = currentCount === 1
-                    ? `1 item = singular (use "is")`
-                    : `${currentCount} items = plural (use "are")`;
-
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(correctMessages)}</div>
-                    <div style="margin-top: 0.5rem;">${explanation}</div>
-                `;
-                feedback.classList.add('show', 'correct');
-                itemCard.classList.add('correct');
-
-                pills.forEach(pill => {
-                    if (pill.textContent.toLowerCase() === selectedWord.toLowerCase()) {
-                        pill.classList.add('correct');
-                    }
-                });
-            } else {
-                streak = 0;
-
-                const explanation = currentCount === 1
-                    ? `1 item = singular (use "is")`
-                    : `${currentCount} items = plural (use "are")`;
-
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(incorrectMessages)} "${correctAnswerDisplay}"</div>
-                    <div style="margin-top: 0.5rem;">${explanation}</div>
-                `;
-                feedback.classList.add('show', 'incorrect');
-                itemCard.classList.add('incorrect');
-
-                pills.forEach(pill => {
-                    if (pill.textContent.toLowerCase() === selectedWord.toLowerCase()) {
-                        pill.classList.add('incorrect');
-                    } else if (pill.textContent.toLowerCase() === correctAnswer) {
-                        pill.classList.add('correct');
-                    }
-                });
-            }
-
-            document.getElementById('streak').textContent = streak;
-            document.getElementById('max-streak').textContent = maxStreak;
-
-            nextButton.classList.add('show');
-            setTimeout(() => nextButton.classList.add('auto-advance'), 10);
-            autoAdvanceTimer = setTimeout(() => nextRound(), 3500);
+            markAnswerPills(selectedAnswer, correctAnswer);
+            showFeedback(isCorrect, explanation, 'item-card');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
         }
 
         function nextRound() {
-            const guessLayout = document.querySelector('.guess-layout');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-
-            guessLayout.classList.add('fade-out');
-            feedback.classList.add('fade-out');
-            nextButton.classList.add('fade-out');
-
-            setTimeout(() => {
-                feedback.classList.remove('fade-out');
-                nextButton.classList.remove('fade-out');
-                displayRound();
-
-                setTimeout(() => {
-                    guessLayout.classList.remove('fade-out');
-                    guessLayout.classList.add('fade-in');
-                    setTimeout(() => guessLayout.classList.remove('fade-in'), 400);
-                }, 50);
-            }, 300);
+            transitionToNextRound(displayRound);
         }
 
         displayRound();

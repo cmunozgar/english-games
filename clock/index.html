@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Time Is It?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="clock.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🕐 What Time Is It? ⏰"></div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Tell the Time!</h1>
+                <p class="subtitle">Learn to read the clock in English!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="clock-container">
+                        <svg id="clock-face" viewBox="0 0 200 200" class="clock-svg">
+                            <!-- Clock face -->
+                            <circle cx="100" cy="100" r="95" fill="white" stroke="var(--color-brand-dark)" stroke-width="4"/>
+
+                            <!-- Hour markers -->
+                            <g id="hour-markers">
+                                <!-- 12 -->
+                                <text x="100" y="28" text-anchor="middle" class="clock-number">12</text>
+                                <!-- 1 -->
+                                <text x="146" y="40" text-anchor="middle" class="clock-number">1</text>
+                                <!-- 2 -->
+                                <text x="172" y="70" text-anchor="middle" class="clock-number">2</text>
+                                <!-- 3 -->
+                                <text x="182" y="105" text-anchor="middle" class="clock-number">3</text>
+                                <!-- 4 -->
+                                <text x="172" y="140" text-anchor="middle" class="clock-number">4</text>
+                                <!-- 5 -->
+                                <text x="146" y="168" text-anchor="middle" class="clock-number">5</text>
+                                <!-- 6 -->
+                                <text x="100" y="185" text-anchor="middle" class="clock-number">6</text>
+                                <!-- 7 -->
+                                <text x="54" y="168" text-anchor="middle" class="clock-number">7</text>
+                                <!-- 8 -->
+                                <text x="28" y="140" text-anchor="middle" class="clock-number">8</text>
+                                <!-- 9 -->
+                                <text x="18" y="105" text-anchor="middle" class="clock-number">9</text>
+                                <!-- 10 -->
+                                <text x="28" y="70" text-anchor="middle" class="clock-number">10</text>
+                                <!-- 11 -->
+                                <text x="54" y="40" text-anchor="middle" class="clock-number">11</text>
+                            </g>
+
+                            <!-- Center dot -->
+                            <circle cx="100" cy="100" r="6" fill="var(--color-brand-dark)"/>
+
+                            <!-- Hour hand -->
+                            <line id="hour-hand" x1="100" y1="100" x2="100" y2="55"
+                                  stroke="var(--color-brand-dark)" stroke-width="6" stroke-linecap="round"/>
+
+                            <!-- Minute hand -->
+                            <line id="minute-hand" x1="100" y1="100" x2="100" y2="35"
+                                  stroke="var(--color-brand-primary)" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <!-- Answer pills will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const timeOptions = [
+            // O'clock times
+            { hour: 1, minute: 0, phrase: "one o'clock" },
+            { hour: 2, minute: 0, phrase: "two o'clock" },
+            { hour: 3, minute: 0, phrase: "three o'clock" },
+            { hour: 4, minute: 0, phrase: "four o'clock" },
+            { hour: 5, minute: 0, phrase: "five o'clock" },
+            { hour: 6, minute: 0, phrase: "six o'clock" },
+            { hour: 7, minute: 0, phrase: "seven o'clock" },
+            { hour: 8, minute: 0, phrase: "eight o'clock" },
+            { hour: 9, minute: 0, phrase: "nine o'clock" },
+            { hour: 10, minute: 0, phrase: "ten o'clock" },
+            { hour: 11, minute: 0, phrase: "eleven o'clock" },
+            { hour: 12, minute: 0, phrase: "twelve o'clock" },
+            // Half past times
+            { hour: 1, minute: 30, phrase: "half past one" },
+            { hour: 2, minute: 30, phrase: "half past two" },
+            { hour: 3, minute: 30, phrase: "half past three" },
+            { hour: 4, minute: 30, phrase: "half past four" },
+            { hour: 5, minute: 30, phrase: "half past five" },
+            { hour: 6, minute: 30, phrase: "half past six" },
+            { hour: 7, minute: 30, phrase: "half past seven" },
+            { hour: 8, minute: 30, phrase: "half past eight" },
+            { hour: 9, minute: 30, phrase: "half past nine" },
+            { hour: 10, minute: 30, phrase: "half past ten" },
+            { hour: 11, minute: 30, phrase: "half past eleven" },
+            { hour: 12, minute: 30, phrase: "half past twelve" },
+            // Quarter past times
+            { hour: 1, minute: 15, phrase: "quarter past one" },
+            { hour: 2, minute: 15, phrase: "quarter past two" },
+            { hour: 3, minute: 15, phrase: "quarter past three" },
+            { hour: 4, minute: 15, phrase: "quarter past four" },
+            { hour: 5, minute: 15, phrase: "quarter past five" },
+            { hour: 6, minute: 15, phrase: "quarter past six" },
+            { hour: 7, minute: 15, phrase: "quarter past seven" },
+            { hour: 8, minute: 15, phrase: "quarter past eight" },
+            { hour: 9, minute: 15, phrase: "quarter past nine" },
+            { hour: 10, minute: 15, phrase: "quarter past ten" },
+            { hour: 11, minute: 15, phrase: "quarter past eleven" },
+            { hour: 12, minute: 15, phrase: "quarter past twelve" },
+            // Quarter to times
+            { hour: 1, minute: 45, phrase: "quarter to two" },
+            { hour: 2, minute: 45, phrase: "quarter to three" },
+            { hour: 3, minute: 45, phrase: "quarter to four" },
+            { hour: 4, minute: 45, phrase: "quarter to five" },
+            { hour: 5, minute: 45, phrase: "quarter to six" },
+            { hour: 6, minute: 45, phrase: "quarter to seven" },
+            { hour: 7, minute: 45, phrase: "quarter to eight" },
+            { hour: 8, minute: 45, phrase: "quarter to nine" },
+            { hour: 9, minute: 45, phrase: "quarter to ten" },
+            { hour: 10, minute: 45, phrase: "quarter to eleven" },
+            { hour: 11, minute: 45, phrase: "quarter to twelve" },
+            { hour: 12, minute: 45, phrase: "quarter to one" }
+        ];
+
+        const game = createGameState();
+        let currentTime = null;
+
+        function setClockHands(hour, minute) {
+            const hourHand = document.getElementById('hour-hand');
+            const minuteHand = document.getElementById('minute-hand');
+            const minuteAngle = minute * 6;
+            const hourAngle = (hour % 12) * 30 + minute * 0.5;
+            hourHand.setAttribute('transform', `rotate(${hourAngle}, 100, 100)`);
+            minuteHand.setAttribute('transform', `rotate(${minuteAngle}, 100, 100)`);
+        }
+
+        function displayRound() {
+            game.clearTimer();
+            currentTime = getRandomItem(timeOptions, game.usedItems, t => `${t.hour}:${t.minute}`);
+            setClockHands(currentTime.hour, currentTime.minute);
+
+            const wrongAnswers = getWrongAnswers(timeOptions, currentTime, t => t.phrase);
+            const options = shuffleArray([currentTime, ...wrongAnswers]);
+
+            createAnswerPills(
+                options,
+                t => "It's " + t.phrase,
+                t => t.phrase,
+                makeGuess,
+                'phrase'
+            );
+
+            document.querySelector('.clock-container').classList.remove('correct', 'incorrect');
+            resetRoundState(null);
+        }
+
+        function makeGuess(selected) {
+            const isCorrect = selected.phrase === currentTime.phrase;
+            const details = `<span style="font-weight: 600;">🕐 It's ${currentTime.phrase}!</span>`;
+
+            markAnswerPills(selected.phrase, currentTime.phrase, 'phrase');
+            showFeedback(isCorrect, details);
+            document.querySelector('.clock-container').classList.add(isCorrect ? 'correct' : 'incorrect');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
+        }
+
+        function nextRound() {
+            transitionToNextRound(displayRound);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

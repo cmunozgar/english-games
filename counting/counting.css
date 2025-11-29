@@ -17,6 +17,8 @@
 .count-card {
     text-align: center;
     padding: var(--space-xl);
+    width: auto;
+    max-width: 50%;
 }
 
 .count-display {

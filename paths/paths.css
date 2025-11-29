@@ -1,0 +1,248 @@
+/* Animal Paths Game Specific Styles */
+
+.game-logo {
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+    color: var(--color-brand-dark);
+    font-size: 2em;
+    font-weight: 600;
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 0.9em;
+    color: var(--color-neutral-700);
+    font-weight: 400;
+}
+
+/* Scene container */
+.scene-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+}
+
+/* Path visualization */
+.path-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--color-neutral-050);
+    border-radius: var(--radius-md);
+    width: 100%;
+    min-height: 120px;
+}
+
+.animal-start {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.animal-emoji {
+    font-size: 4rem;
+}
+
+.animal-name {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--color-brand-dark);
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+}
+
+.path-line {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 200px;
+    height: 4px;
+    position: relative;
+}
+
+.path-line.goes {
+    background: linear-gradient(90deg, var(--color-success) 0%, var(--color-success) 100%);
+}
+
+.path-line.goes::after {
+    content: '🐾 🐾 🐾';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    letter-spacing: 8px;
+}
+
+.path-line.doesnt-go {
+    background: linear-gradient(90deg, var(--color-neutral-100) 0%, transparent 70%);
+}
+
+.path-line.doesnt-go::after {
+    content: '🐾 ✗';
+    position: absolute;
+    top: -12px;
+    left: 30%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    letter-spacing: 8px;
+}
+
+.path-line.hidden {
+    background: linear-gradient(90deg, var(--color-neutral-100) 0%, var(--color-neutral-100) 100%);
+}
+
+.path-line.hidden::after {
+    content: '? ? ?';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    letter-spacing: 8px;
+    color: var(--color-neutral-700);
+}
+
+.destination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.destination-emoji {
+    font-size: 3rem;
+}
+
+.destination-name {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--color-brand-dark);
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Question text */
+.question-text {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--color-brand-dark);
+    text-align: center;
+    margin: var(--space-sm) 0;
+}
+
+.question-text .animal {
+    color: var(--color-info);
+}
+
+.question-text .place {
+    color: var(--color-success);
+}
+
+/* Answer options */
+.answer-options {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+.answer-pill {
+    padding: var(--space-sm) var(--space-lg);
+    border: 2px solid var(--color-neutral-100);
+    border-radius: var(--radius-full);
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    min-width: 140px;
+    text-align: center;
+    background: white;
+    color: var(--color-brand-dark);
+}
+
+.answer-pill:hover {
+    border-color: var(--color-brand-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.answer-pill.correct {
+    border-color: var(--color-success) !important;
+    background: var(--color-success) !important;
+    color: white !important;
+}
+
+.answer-pill.incorrect {
+    border-color: var(--color-error) !important;
+    background: var(--color-error) !important;
+    color: white !important;
+}
+
+.answer-pill.disabled {
+    pointer-events: none;
+}
+
+.answer-pill.disabled:not(.correct):not(.incorrect) {
+    opacity: 0.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-logo {
+        font-size: 1.5em;
+    }
+
+    .animal-emoji {
+        font-size: 3rem;
+    }
+
+    .destination-emoji {
+        font-size: 2.5rem;
+    }
+
+    .path-line {
+        max-width: 100px;
+    }
+
+    .answer-options {
+        flex-direction: row;
+    }
+
+    .answer-pill {
+        min-width: 120px;
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .question-text {
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-logo {
+        font-size: 1.3em;
+    }
+
+    .animal-emoji {
+        font-size: 2.5rem;
+    }
+
+    .destination-emoji {
+        font-size: 2rem;
+    }
+
+    .path-line {
+        max-width: 60px;
+    }
+
+    .answer-pill {
+        min-width: 100px;
+        font-size: 1em;
+    }
+
+    .question-text {
+        font-size: 1em;
+    }
+}

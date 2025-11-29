@@ -67,6 +67,24 @@ body {
     justify-content: center;
 }
 
+.top-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+}
+
+.top-header .back-link {
+    position: absolute;
+    left: 0;
+    margin: 0;
+}
+
+.top-header .game-logo {
+    margin: 0;
+}
+
 .background-animation {
     position: fixed;
     top: 0;
@@ -364,6 +382,7 @@ body {
     cursor: pointer;
     transition: all var(--transition);
     opacity: 0;
+    pointer-events: none;
     font-family: 'Figtree', sans-serif;
     position: relative;
     overflow: hidden;
@@ -371,6 +390,7 @@ body {
 
 .next-button.show {
     opacity: 1;
+    pointer-events: auto;
 }
 
 .next-button:hover {
@@ -392,7 +412,7 @@ body {
 
 .next-button.auto-advance::before {
     width: 100%;
-    transition: width 3.5s linear;
+    transition: width 3s linear;
 }
 
 .next-button span {

@@ -17,10 +17,8 @@
 
     <!-- Main Container -->
     <div class="main-container">
-        <!-- Logo -->
-        <div class="logo-container">
-            <h1 class="game-logo">☀️ Weather Words ☁️</h1>
-        </div>
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="☀️ Weather Words ☁️"></div>
 
         <!-- Game Card -->
         <div class="game-container">
@@ -49,8 +47,6 @@
                 <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
             </div>
         </div>
-
-        <a href="../index.html" class="back-link">← Back to Menu</a>
     </div>
 
     <script src="../shared/components.js"></script>
@@ -68,177 +64,40 @@
             { word: 'rainbow', emoji: '🌈', description: 'A beautiful rainbow appears!' }
         ];
 
+        const game = createGameState();
         let currentWeather = null;
-        let streak = 0;
-        let maxStreak = 0;
-        let usedWeather = new Set();
-        let autoAdvanceTimer = null;
-
-        const correctMessages = [
-            "⭐ Perfect! That's the right weather!",
-            "🎉 Excellent work!",
-            "👏 Amazing! You got it!",
-            "🌟 Yes! Great job!",
-            "💚 Fantastic!",
-            "🎊 Brilliant!",
-            "✨ Correct!",
-            "🏆 Outstanding!",
-            "💪 Well done!",
-            "🎯 Spot on!"
-        ];
-
-        const incorrectMessages = [
-            "💭 Not quite! It's",
-            "🤔 Good try! The answer is",
-            "📚 Let's learn! The correct word is",
-            "💡 Almost! It's actually",
-            "🌱 Nice effort! It's",
-            "🎓 Keep learning! It's",
-            "🔍 Not this time! The answer is",
-            "📖 Don't worry! It's",
-            "🧠 Learning time! The answer is",
-            "💫 Good guess! It's actually"
-        ];
-
-        function getRandomMessage(messages) {
-            return messages[Math.floor(Math.random() * messages.length)];
-        }
-
-        function getRandomWeather() {
-            let attempts = 0;
-            while (attempts < 100) {
-                const randomIndex = Math.floor(Math.random() * weatherTypes.length);
-                const weather = weatherTypes[randomIndex];
-                if (!usedWeather.has(weather.word)) {
-                    usedWeather.add(weather.word);
-                    return weather;
-                }
-                attempts++;
-            }
-            usedWeather.clear();
-            return weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
-        }
-
-        function getWrongWeather(correct) {
-            const wrong = [];
-            while (wrong.length < 2) {
-                const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
-                if (randomWeather.word !== correct && !wrong.includes(randomWeather.word)) {
-                    wrong.push(randomWeather.word);
-                }
-            }
-            return wrong;
-        }
 
         function displayRound() {
-            if (autoAdvanceTimer) {
-                clearTimeout(autoAdvanceTimer);
-                autoAdvanceTimer = null;
-            }
-
-            currentWeather = getRandomWeather();
+            game.clearTimer();
+            currentWeather = getRandomItem(weatherTypes, game.usedItems, w => w.word);
 
             document.getElementById('weather-emoji').textContent = currentWeather.emoji;
 
-            // Create answer options
-            const optionsContainer = document.getElementById('answer-options');
-            optionsContainer.innerHTML = '';
+            const wrongAnswers = getWrongAnswers(weatherTypes, currentWeather, w => w.word);
+            const options = shuffleArray([currentWeather, ...wrongAnswers]);
 
-            const wrongWords = getWrongWeather(currentWeather.word);
-            const options = [currentWeather.word, ...wrongWords];
-            options.sort(() => Math.random() - 0.5);
+            createAnswerPills(
+                options,
+                w => w.word.charAt(0).toUpperCase() + w.word.slice(1),
+                w => w.word,
+                makeGuess
+            );
 
-            options.forEach(option => {
-                const pill = document.createElement('button');
-                pill.className = 'answer-pill';
-                pill.textContent = option.charAt(0).toUpperCase() + option.slice(1);
-                pill.dataset.word = option;
-                pill.onclick = () => makeGuess(option);
-                optionsContainer.appendChild(pill);
-            });
-
-            document.getElementById('weather-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
-            const feedback = document.getElementById('feedback');
-            feedback.classList.remove('show', 'correct', 'incorrect');
-            const nextButton = document.getElementById('next-button');
-            nextButton.classList.remove('show', 'auto-advance');
+            resetRoundState('weather-card');
         }
 
-        function makeGuess(selectedWord) {
-            const pills = document.querySelectorAll('.answer-pill');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-            const weatherCard = document.getElementById('weather-card');
+        function makeGuess(selected) {
+            const isCorrect = selected.word === currentWeather.word;
+            const details = `${currentWeather.emoji} = ${currentWeather.word}<div style="margin-top: 0.25rem; font-size: 0.9em;">${currentWeather.description}</div>`;
 
-            pills.forEach(pill => pill.classList.add('disabled'));
-
-            const isCorrect = selectedWord === currentWeather.word;
-
-            if (isCorrect) {
-                streak++;
-                if (streak > maxStreak) maxStreak = streak;
-
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(correctMessages)}</div>
-                    <div style="margin-top: 0.5rem;">${currentWeather.emoji} = ${currentWeather.word}</div>
-                    <div style="margin-top: 0.25rem; font-size: 0.9em;">${currentWeather.description}</div>
-                `;
-                feedback.classList.add('show', 'correct');
-                weatherCard.classList.add('correct');
-
-                pills.forEach(pill => {
-                    if (pill.dataset.word === selectedWord) {
-                        pill.classList.add('correct');
-                    }
-                });
-            } else {
-                streak = 0;
-
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(incorrectMessages)} "${currentWeather.word}"</div>
-                    <div style="margin-top: 0.5rem;">${currentWeather.emoji} = ${currentWeather.word}</div>
-                    <div style="margin-top: 0.25rem; font-size: 0.9em;">${currentWeather.description}</div>
-                `;
-                feedback.classList.add('show', 'incorrect');
-                weatherCard.classList.add('incorrect');
-
-                pills.forEach(pill => {
-                    if (pill.dataset.word === selectedWord) {
-                        pill.classList.add('incorrect');
-                    } else if (pill.dataset.word === currentWeather.word) {
-                        pill.classList.add('correct');
-                    }
-                });
-            }
-
-            document.getElementById('streak').textContent = streak;
-            document.getElementById('max-streak').textContent = maxStreak;
-
-            nextButton.classList.add('show');
-            setTimeout(() => nextButton.classList.add('auto-advance'), 10);
-            autoAdvanceTimer = setTimeout(() => nextRound(), 3500);
+            markAnswerPills(selected.word, currentWeather.word);
+            showFeedback(isCorrect, details, 'weather-card');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
         }
 
         function nextRound() {
-            const guessLayout = document.querySelector('.guess-layout');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-
-            guessLayout.classList.add('fade-out');
-            feedback.classList.add('fade-out');
-            nextButton.classList.add('fade-out');
-
-            setTimeout(() => {
-                feedback.classList.remove('fade-out');
-                nextButton.classList.remove('fade-out');
-                displayRound();
-
-                setTimeout(() => {
-                    guessLayout.classList.remove('fade-out');
-                    guessLayout.classList.add('fade-in');
-                    setTimeout(() => guessLayout.classList.remove('fade-in'), 400);
-                }, 50);
-            }, 300);
+            transitionToNextRound(displayRound);
         }
 
         displayRound();

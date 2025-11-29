@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where Do They Go?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="paths.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🐾 Where Do They Go? 🏠"></div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Do they go or don't go?</h1>
+                <p class="subtitle">Learn about animals and where they go!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="scene-container">
+                        <div class="question-text" id="question-text">
+                            Does <span class="animal">the cat</span> go to <span class="place">the house</span>?
+                        </div>
+
+                        <div class="path-visual">
+                            <div class="animal-start">
+                                <div class="animal-emoji" id="animal-emoji">🐱</div>
+                                <div class="animal-name" id="animal-name">The cat</div>
+                            </div>
+                            <div class="path-line hidden" id="path-line"></div>
+                            <div class="destination">
+                                <div class="destination-emoji" id="destination-emoji">🏠</div>
+                                <div class="destination-name" id="destination-name">to the house</div>
+                            </div>
+                        </div>
+
+                        <div class="answer-options" id="answer-options">
+                            <!-- Buttons will be generated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const animals = [
+            { emoji: '🐱', singular: 'The cat', plural: 'The cats', base: 'cat' },
+            { emoji: '🐶', singular: 'The dog', plural: 'The dogs', base: 'dog' },
+            { emoji: '🐴', singular: 'The horse', plural: 'The horses', base: 'horse' },
+            { emoji: '🐄', singular: 'The cow', plural: 'The cows', base: 'cow' },
+            { emoji: '🐷', singular: 'The pig', plural: 'The pigs', base: 'pig' },
+            { emoji: '🐑', singular: 'The sheep', plural: 'The sheep', base: 'sheep' },
+            { emoji: '🐔', singular: 'The chicken', plural: 'The chickens', base: 'chicken' },
+            { emoji: '🦆', singular: 'The duck', plural: 'The ducks', base: 'duck' },
+            { emoji: '🐰', singular: 'The rabbit', plural: 'The rabbits', base: 'rabbit' },
+            { emoji: '🐦', singular: 'The bird', plural: 'The birds', base: 'bird' }
+        ];
+
+        const destinations = [
+            { emoji: '🏠', name: 'the house' }, { emoji: '🏞️', name: 'the park' },
+            { emoji: '🌊', name: 'the pond' }, { emoji: '🌾', name: 'the farm' },
+            { emoji: '🌲', name: 'the forest' }, { emoji: '🏔️', name: 'the mountain' },
+            { emoji: '🛖', name: 'the barn' }, { emoji: '🌻', name: 'the garden' }
+        ];
+
+        const animalDestinations = {
+            'cat': { 'the house': true, 'the park': true, 'the pond': false, 'the farm': true, 'the forest': false, 'the mountain': false, 'the barn': true, 'the garden': true },
+            'dog': { 'the house': true, 'the park': true, 'the pond': true, 'the farm': true, 'the forest': true, 'the mountain': true, 'the barn': true, 'the garden': true },
+            'horse': { 'the house': false, 'the park': true, 'the pond': true, 'the farm': true, 'the forest': true, 'the mountain': true, 'the barn': true, 'the garden': false },
+            'cow': { 'the house': false, 'the park': false, 'the pond': true, 'the farm': true, 'the forest': false, 'the mountain': true, 'the barn': true, 'the garden': false },
+            'pig': { 'the house': false, 'the park': false, 'the pond': true, 'the farm': true, 'the forest': true, 'the mountain': false, 'the barn': true, 'the garden': false },
+            'sheep': { 'the house': false, 'the park': false, 'the pond': false, 'the farm': true, 'the forest': false, 'the mountain': true, 'the barn': true, 'the garden': false },
+            'chicken': { 'the house': false, 'the park': false, 'the pond': false, 'the farm': true, 'the forest': false, 'the mountain': false, 'the barn': true, 'the garden': true },
+            'duck': { 'the house': false, 'the park': true, 'the pond': true, 'the farm': true, 'the forest': false, 'the mountain': false, 'the barn': true, 'the garden': true },
+            'rabbit': { 'the house': true, 'the park': true, 'the pond': false, 'the farm': true, 'the forest': true, 'the mountain': false, 'the barn': true, 'the garden': true },
+            'bird': { 'the house': true, 'the park': true, 'the pond': true, 'the farm': true, 'the forest': true, 'the mountain': true, 'the barn': true, 'the garden': true }
+        };
+
+        const game = createGameState();
+        let currentAnimal = null;
+        let currentDestination = null;
+        let isPlural = false;
+        let correctAnswer = null;
+
+        function displayRound() {
+            game.clearTimer();
+
+            const combo = getRandomItem(
+                animals.flatMap(a => destinations.map(d => ({ animal: a, destination: d, plural: Math.random() < 0.5 }))),
+                game.usedItems,
+                c => `${c.animal.base}-${c.destination.name}-${c.plural ? 'p' : 's'}`
+            );
+
+            currentAnimal = combo.animal;
+            currentDestination = combo.destination;
+            isPlural = combo.plural;
+            correctAnswer = animalDestinations[currentAnimal.base][currentDestination.name];
+
+            const animalName = isPlural ? currentAnimal.plural : currentAnimal.singular;
+            const questionVerb = isPlural ? 'go' : 'goes';
+            const questionWord = isPlural ? 'Do' : 'Does';
+
+            document.getElementById('animal-emoji').textContent = currentAnimal.emoji;
+            document.getElementById('animal-name').textContent = animalName;
+            document.getElementById('destination-emoji').textContent = currentDestination.emoji;
+            document.getElementById('destination-name').textContent = 'to ' + currentDestination.name;
+            document.getElementById('question-text').innerHTML =
+                `${questionWord} <span class="animal">${animalName.toLowerCase()}</span> ${questionVerb} to <span class="place">${currentDestination.name}</span>?`;
+
+            const container = document.getElementById('answer-options');
+            container.innerHTML = isPlural
+                ? `<button class="answer-pill" onclick="makeGuess(true)">✓ They go</button><button class="answer-pill" onclick="makeGuess(false)">✗ They don't go</button>`
+                : `<button class="answer-pill" onclick="makeGuess(true)">✓ It goes</button><button class="answer-pill" onclick="makeGuess(false)">✗ It doesn't go</button>`;
+
+            document.getElementById('path-line').className = 'path-line hidden';
+            resetRoundState(null);
+        }
+
+        function makeGuess(selectedGoes) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const isCorrect = selectedGoes === correctAnswer;
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const animalName = isPlural ? currentAnimal.plural : currentAnimal.singular;
+            const answerText = correctAnswer ? (isPlural ? 'go' : 'goes') : (isPlural ? "don't go" : "doesn't go");
+            const sentenceExample = `<span style="font-weight: 600;">${animalName} ${answerText} to ${currentDestination.name}.</span>`;
+
+            pills.forEach((pill, index) => {
+                if ((index === 0 && selectedGoes) || (index === 1 && !selectedGoes)) {
+                    pill.classList.add(isCorrect ? 'correct' : 'incorrect');
+                }
+                if (!isCorrect && ((index === 0 && correctAnswer) || (index === 1 && !correctAnswer))) {
+                    pill.classList.add('correct');
+                }
+            });
+
+            showFeedback(isCorrect, sentenceExample);
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
+        }
+
+        function nextRound() {
+            transitionToNextRound(displayRound);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

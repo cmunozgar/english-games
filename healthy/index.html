@@ -17,10 +17,8 @@
 
     <!-- Main Container with Logo + Card -->
     <div class="main-container">
-        <!-- Logo -->
-        <div class="logo-container">
-            <h1 class="game-logo">🍎 Healthy or Not? 🍔</h1>
-        </div>
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🍎 Healthy or Not? 🍔"></div>
 
         <!-- Game Card -->
         <div class="game-container">
@@ -55,13 +53,10 @@
                 <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
             </div>
         </div>
-
-        <a href="../index.html" class="back-link">← Back to Menu</a>
     </div>
 
     <script src="../shared/components.js"></script>
     <script>
-        // Food items with educational information
         const foodItems = [
             // Healthy foods
             { emoji: '🍎', name: 'Apple', healthy: true, info: 'Apples are full of vitamins and fiber!' },
@@ -79,7 +74,6 @@
             { emoji: '🥜', name: 'Peanuts', healthy: true, info: 'Peanuts have protein for strong muscles!' },
             { emoji: '🍑', name: 'Peach', healthy: true, info: 'Peaches are juicy and nutritious!' },
             { emoji: '🥥', name: 'Coconut', healthy: true, info: 'Coconuts have healthy fats!' },
-
             // Unhealthy foods
             { emoji: '🍔', name: 'Hamburger', healthy: false, info: 'Burgers are okay sometimes, but not every day!' },
             { emoji: '🍟', name: 'French Fries', healthy: false, info: 'Fries have lots of salt and oil!' },
@@ -98,192 +92,47 @@
             { emoji: '🧃', name: 'Juice Box', healthy: false, info: 'Juice boxes often have added sugar!' }
         ];
 
+        const game = createGameState();
         let currentFood = null;
-        let streak = 0;
-        let maxStreak = 0;
-        let usedFoods = new Set();
-        let autoAdvanceTimer = null;
-
-        // Fun messages for different outcomes
-        const correctMessages = [
-            "⭐ Amazing! You're right!",
-            "🎉 Perfect! Great job!",
-            "👏 Excellent work!",
-            "🌟 You got it!",
-            "💚 Fantastic!",
-            "🎊 Super smart!",
-            "✨ Well done!",
-            "🏆 You're a health expert!",
-            "💪 Great choice!",
-            "🎯 Spot on!"
-        ];
-
-        const incorrectMessages = [
-            "💭 Oops! Let's learn:",
-            "🤔 Not quite! Here's why:",
-            "📚 Let's discover:",
-            "💡 Good try! Now you know:",
-            "🌱 That's okay! Learn this:",
-            "🎓 Nice effort! Remember:",
-            "🔍 Almost! Here's the truth:",
-            "📖 Don't worry! Now you know:",
-            "🧠 Learning time:",
-            "💫 Great guess! Actually:"
-        ];
-
-        function getRandomMessage(messages) {
-            const randomIndex = Math.floor(Math.random() * messages.length);
-            return messages[randomIndex];
-        }
-
-        function getRandomFood() {
-            if (foodItems.length === 0) {
-                console.error("No food items available");
-                return null;
-            }
-
-            let attempts = 0;
-            const maxAttempts = 100;
-
-            while (attempts < maxAttempts) {
-                const randomIndex = Math.floor(Math.random() * foodItems.length);
-                const food = foodItems[randomIndex];
-
-                if (!usedFoods.has(food.name)) {
-                    usedFoods.add(food.name);
-                    return food;
-                }
-                attempts++;
-            }
-
-            // If we've seen all foods, reset and return a new food
-            usedFoods.clear();
-            const randomIndex = Math.floor(Math.random() * foodItems.length);
-            return foodItems[randomIndex];
-        }
 
         function displayRound() {
-            // Clear any existing auto-advance timer
-            if (autoAdvanceTimer) {
-                clearTimeout(autoAdvanceTimer);
-                autoAdvanceTimer = null;
-            }
+            game.clearTimer();
+            currentFood = getRandomItem(foodItems, game.usedItems, f => f.name);
 
-            currentFood = getRandomFood();
-
-            // Display food
             document.getElementById('food-emoji').textContent = currentFood.emoji;
             document.getElementById('food-name').textContent = currentFood.name;
 
-            // Reset states
-            document.getElementById('food-card').classList.remove('correct', 'incorrect', 'disabled', 'fade-out', 'fade-in');
+            resetRoundState('food-card');
             const pills = document.querySelectorAll('.answer-pill');
-            pills.forEach(pill => {
-                pill.classList.remove('disabled', 'correct', 'incorrect');
-            });
-            const feedback = document.getElementById('feedback');
-            feedback.classList.remove('show', 'correct', 'incorrect');
-            const nextButton = document.getElementById('next-button');
-            nextButton.classList.remove('show', 'auto-advance');
+            pills.forEach(pill => pill.classList.remove('disabled', 'correct', 'incorrect'));
         }
 
         function makeGuess(selectedHealthy) {
             const pills = document.querySelectorAll('.answer-pill');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-            const foodCard = document.getElementById('food-card');
-
-            // Disable all pills
-            pills.forEach(pill => pill.classList.add('disabled'));
-
             const isCorrect = selectedHealthy === currentFood.healthy;
 
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const pillsArray = Array.from(pills);
+            const selectedIndex = selectedHealthy ? 0 : 1;
+            const correctIndex = currentFood.healthy ? 0 : 1;
+
             if (isCorrect) {
-                streak++;
-                if (streak > maxStreak) {
-                    maxStreak = streak;
-                }
-
-                // Combine message and info
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(correctMessages)}</div>
-                    <div style="margin-top: 0.5rem;">${currentFood.info}</div>
-                `;
-                feedback.classList.add('show', 'correct');
-                foodCard.classList.add('correct');
-
-                // Highlight correct pill (get pills as array and check by index)
-                const pillsArray = Array.from(pills);
-                const selectedIndex = selectedHealthy ? 0 : 1;
                 pillsArray[selectedIndex].classList.add('correct');
             } else {
-                streak = 0;
-
-                // Combine message and info
-                feedback.innerHTML = `
-                    <div>${getRandomMessage(incorrectMessages)}</div>
-                    <div style="margin-top: 0.5rem;">${currentFood.info}</div>
-                `;
-                feedback.classList.add('show', 'incorrect');
-                foodCard.classList.add('incorrect');
-
-                // Highlight correct and incorrect pills
-                const pillsArray = Array.from(pills);
-                const selectedIndex = selectedHealthy ? 0 : 1;
-                const correctIndex = currentFood.healthy ? 0 : 1;
                 pillsArray[selectedIndex].classList.add('incorrect');
                 pillsArray[correctIndex].classList.add('correct');
             }
 
-            // Update score display
-            document.getElementById('streak').textContent = streak;
-            document.getElementById('max-streak').textContent = maxStreak;
-
-            // Show next button with auto-advance
-            nextButton.classList.add('show');
-
-            // Start auto-advance timer and animation
-            setTimeout(() => {
-                nextButton.classList.add('auto-advance');
-            }, 10);
-
-            autoAdvanceTimer = setTimeout(() => {
-                nextRound();
-            }, 3500);
+            showFeedback(isCorrect, currentFood.info, 'food-card');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
         }
 
         function nextRound() {
-            // Fade out current content
-            const guessLayout = document.querySelector('.guess-layout');
-            const feedback = document.getElementById('feedback');
-            const nextButton = document.getElementById('next-button');
-
-            guessLayout.classList.add('fade-out');
-            feedback.classList.add('fade-out');
-            nextButton.classList.add('fade-out');
-
-            // Wait for fade out animation, then load new round
-            setTimeout(() => {
-                // Remove fade-out classes
-                feedback.classList.remove('fade-out');
-                nextButton.classList.remove('fade-out');
-
-                displayRound();
-
-                // Fade in new content
-                setTimeout(() => {
-                    guessLayout.classList.remove('fade-out');
-                    guessLayout.classList.add('fade-in');
-
-                    // Remove animation class after animation completes
-                    setTimeout(() => {
-                        guessLayout.classList.remove('fade-in');
-                    }, 400);
-                }, 50);
-            }, 300);
+            transitionToNextRound(displayRound);
         }
 
-        // Initialize game
         displayRound();
     </script>
 </body>
