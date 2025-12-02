@@ -63,7 +63,7 @@ function renderTopHeader(containerId = 'top-header') {
 
     const title = container.dataset.title || 'Game';
     const html = `
-        <a href="../index.html" class="back-link">← Games</a>
+        <a href="/" class="back-link">← Games</a>
         <h1 class="game-logo">${title}</h1>
     `;
     container.innerHTML = html;
