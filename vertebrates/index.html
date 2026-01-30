@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertebrate or Invertebrate?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="vertebrates.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🦴 Vertebrate or Invertebrate? 🐛"></div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Vertebrate or Invertebrate?</h1>
+                <p class="subtitle">Learn which animals have a backbone and which don't!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card animal-card" id="animal-card">
+                        <div class="animal-emoji" id="animal-emoji">🐶</div>
+                        <div class="animal-name" id="animal-name">Dog</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <button class="answer-pill" onclick="makeGuess(true)">
+                            🦴 Vertebrate
+                        </button>
+                        <button class="answer-pill" onclick="makeGuess(false)">
+                            🐛 Invertebrate
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const animals = [
+            // Vertebrates (have a backbone)
+            { emoji: '🐶', name: 'Dog', vertebrate: true, info: 'Dogs are vertebrates. They have a backbone and skeleton inside!' },
+            { emoji: '🐱', name: 'Cat', vertebrate: true, info: 'Cats are vertebrates. They have a backbone and internal skeleton!' },
+            { emoji: '🐴', name: 'Horse', vertebrate: true, info: 'Horses are vertebrates. They have a strong backbone!' },
+            { emoji: '🐄', name: 'Cow', vertebrate: true, info: 'Cows are vertebrates. They have a backbone and bones inside!' },
+            { emoji: '🐸', name: 'Frog', vertebrate: true, info: 'Frogs are vertebrates. They are amphibians with a backbone!' },
+            { emoji: '🐍', name: 'Snake', vertebrate: true, info: 'Snakes are vertebrates. They have many small bones in their spine!' },
+            { emoji: '🐠', name: 'Fish', vertebrate: true, info: 'Most fish are vertebrates. They have a backbone and fins!' },
+            { emoji: '🦅', name: 'Eagle', vertebrate: true, info: 'Eagles are vertebrates. Birds have a backbone and hollow bones!' },
+            { emoji: '🐢', name: 'Turtle', vertebrate: true, info: 'Turtles are vertebrates. They have a backbone inside their shell!' },
+            { emoji: '🦁', name: 'Lion', vertebrate: true, info: 'Lions are vertebrates. They have a strong backbone and skeleton!' },
+            { emoji: '🐘', name: 'Elephant', vertebrate: true, info: 'Elephants are vertebrates. They have the biggest backbone of land animals!' },
+            { emoji: '🦈', name: 'Shark', vertebrate: true, info: 'Sharks are vertebrates. Their skeleton is made of cartilage, not bone!' },
+            { emoji: '🐧', name: 'Penguin', vertebrate: true, info: 'Penguins are vertebrates. They are birds with a backbone!' },
+            { emoji: '🐊', name: 'Crocodile', vertebrate: true, info: 'Crocodiles are vertebrates. They are reptiles with a strong backbone!' },
+            { emoji: '🦎', name: 'Lizard', vertebrate: true, info: 'Lizards are vertebrates. They are reptiles with a backbone!' },
+            // Invertebrates (no backbone)
+            { emoji: '🐛', name: 'Caterpillar', vertebrate: false, info: 'Caterpillars are invertebrates. They have no bones at all!' },
+            { emoji: '🦋', name: 'Butterfly', vertebrate: false, info: 'Butterflies are invertebrates. Insects have no backbone!' },
+            { emoji: '🐌', name: 'Snail', vertebrate: false, info: 'Snails are invertebrates. They have a soft body and no bones!' },
+            { emoji: '🐙', name: 'Octopus', vertebrate: false, info: 'Octopuses are invertebrates. They have no bones at all!' },
+            { emoji: '🦑', name: 'Squid', vertebrate: false, info: 'Squids are invertebrates. They have a soft body with no backbone!' },
+            { emoji: '🐝', name: 'Bee', vertebrate: false, info: 'Bees are invertebrates. Insects have an exoskeleton instead of bones!' },
+            { emoji: '🐜', name: 'Ant', vertebrate: false, info: 'Ants are invertebrates. They have a hard outer shell but no bones!' },
+            { emoji: '🕷️', name: 'Spider', vertebrate: false, info: 'Spiders are invertebrates. They have an exoskeleton but no backbone!' },
+            { emoji: '🪱', name: 'Worm', vertebrate: false, info: 'Worms are invertebrates. They have a soft body with no bones!' },
+            { emoji: '🦀', name: 'Crab', vertebrate: false, info: 'Crabs are invertebrates. They have a hard shell outside but no bones inside!' },
+            { emoji: '🦐', name: 'Shrimp', vertebrate: false, info: 'Shrimps are invertebrates. They have a shell but no backbone!' },
+            { emoji: '🐚', name: 'Clam', vertebrate: false, info: 'Clams are invertebrates. They have a hard shell but no bones inside!' },
+            { emoji: '🪼', name: 'Jellyfish', vertebrate: false, info: 'Jellyfish are invertebrates. They have no bones, no brain, and no heart!' },
+            { emoji: '🐞', name: 'Ladybug', vertebrate: false, info: 'Ladybugs are invertebrates. They are insects with no backbone!' },
+            { emoji: '🦟', name: 'Mosquito', vertebrate: false, info: 'Mosquitoes are invertebrates. They are tiny insects with no bones!' }
+        ];
+
+        const game = createGameState();
+        let currentAnimal = null;
+
+        function displayRound() {
+            game.clearTimer();
+            currentAnimal = getRandomItem(animals, game.usedItems, a => a.name);
+
+            document.getElementById('animal-emoji').textContent = currentAnimal.emoji;
+            document.getElementById('animal-name').textContent = currentAnimal.name;
+
+            resetRoundState('animal-card');
+            const pills = document.querySelectorAll('.answer-pill');
+            pills.forEach(pill => pill.classList.remove('disabled', 'correct', 'incorrect'));
+        }
+
+        function makeGuess(selectedVertebrate) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const isCorrect = selectedVertebrate === currentAnimal.vertebrate;
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const pillsArray = Array.from(pills);
+            const selectedIndex = selectedVertebrate ? 0 : 1;
+            const correctIndex = currentAnimal.vertebrate ? 0 : 1;
+
+            if (isCorrect) {
+                pillsArray[selectedIndex].classList.add('correct');
+            } else {
+                pillsArray[selectedIndex].classList.add('incorrect');
+                pillsArray[correctIndex].classList.add('correct');
+            }
+
+            showFeedback(isCorrect, currentAnimal.info, 'animal-card');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
+        }
+
+        function nextRound() {
+            transitionToNextRound(displayRound);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

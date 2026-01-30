@@ -29,9 +29,13 @@
             font-weight: 400;
         }
 
+        .main-container {
+            max-width: 1100px;
+        }
+
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: var(--space-sm);
             margin-top: var(--space-lg);
         }
@@ -165,6 +169,24 @@
                     <div class="game-icon">🙅</div>
                     <div class="game-title">Don't or Doesn't?</div>
                     <div class="game-description">Learn when to use "don't" and "doesn't"!</div>
+                </a>
+
+                <a href="hisher/" class="game-card">
+                    <div class="game-icon">👦👧</div>
+                    <div class="game-title">His or Her?</div>
+                    <div class="game-description">Learn when to use "his" and "her"!</div>
+                </a>
+
+                <a href="viviparous/" class="game-card">
+                    <div class="game-icon">🐄🥚</div>
+                    <div class="game-title">Viviparous or Oviparous?</div>
+                    <div class="game-description">Learn which animals are born alive and which hatch from eggs!</div>
+                </a>
+
+                <a href="vertebrates/" class="game-card">
+                    <div class="game-icon">🦴🐛</div>
+                    <div class="game-title">Vertebrate or Invertebrate?</div>
+                    <div class="game-description">Learn which animals have a backbone and which don't!</div>
                 </a>
             </div>
         </div>

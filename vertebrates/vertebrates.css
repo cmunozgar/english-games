@@ -1,0 +1,135 @@
+/* Vertebrate or Invertebrate Game Specific Styles */
+
+.game-logo {
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+    color: var(--color-brand-dark);
+    font-size: 2em;
+    font-weight: 600;
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 0.9em;
+    color: var(--color-neutral-700);
+    font-weight: 400;
+}
+
+/* Animal card - centered content */
+.animal-card {
+    text-align: center;
+}
+
+/* Animal emoji displayed in the card - large and centered */
+.animal-emoji {
+    font-size: 6rem;
+    margin-bottom: var(--space-sm);
+}
+
+.animal-name {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--color-brand-dark);
+    font-family: 'Stolzl', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Answer options */
+.answer-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.answer-pill {
+    padding: var(--space-sm) var(--space-lg);
+    border: 2px solid;
+    border-radius: var(--radius-full);
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    min-width: 280px;
+    text-align: center;
+}
+
+/* First pill (Vertebrate) - purple styling */
+.answer-pill:first-child {
+    background: hsl(270, 70%, 96%);
+    border-color: hsl(270, 60%, 55%);
+    color: hsl(270, 60%, 40%);
+}
+
+.answer-pill:first-child:hover {
+    background: hsl(270, 60%, 55%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px hsla(270, 60%, 55%, 0.3);
+}
+
+/* Second pill (Invertebrate) - teal styling */
+.answer-pill:last-child {
+    background: hsl(175, 60%, 96%);
+    border-color: hsl(175, 50%, 45%);
+    color: hsl(175, 50%, 35%);
+}
+
+.answer-pill:last-child:hover {
+    background: hsl(175, 50%, 45%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px hsla(175, 50%, 45%, 0.3);
+}
+
+.answer-pill.correct {
+    border-color: var(--color-success) !important;
+    background: var(--color-success) !important;
+    color: white !important;
+}
+
+.answer-pill.incorrect {
+    border-color: var(--color-error) !important;
+    background: var(--color-error) !important;
+    color: white !important;
+}
+
+.answer-pill.disabled {
+    pointer-events: none;
+}
+
+.answer-pill.disabled:not(.correct):not(.incorrect) {
+    opacity: 0.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-logo {
+        font-size: 1.5em;
+    }
+
+    .animal-emoji {
+        font-size: 5rem;
+    }
+
+    .animal-name {
+        font-size: 1.2em;
+    }
+
+    .answer-pill {
+        min-width: 100%;
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-logo {
+        font-size: 1.3em;
+    }
+
+    .animal-emoji {
+        font-size: 4rem;
+    }
+
+    .animal-name {
+        font-size: 1em;
+    }
+}

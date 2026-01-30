@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viviparous or Oviparous?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="viviparous.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🐄 Viviparous or Oviparous? 🥚"></div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Viviparous or Oviparous?</h1>
+                <p class="subtitle">Learn which animals are born alive and which hatch from eggs!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card animal-card" id="animal-card">
+                        <div class="animal-emoji" id="animal-emoji">🐄</div>
+                        <div class="animal-name" id="animal-name">Cow</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <button class="answer-pill" onclick="makeGuess(true)">
+                            🐄 Viviparous
+                        </button>
+                        <button class="answer-pill" onclick="makeGuess(false)">
+                            🥚 Oviparous
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const animals = [
+            // Viviparous (born alive)
+            { emoji: '🐄', name: 'Cow', viviparous: true, info: 'Cows are viviparous. Calves are born alive from their mother!' },
+            { emoji: '🐶', name: 'Dog', viviparous: true, info: 'Dogs are viviparous. Puppies are born alive!' },
+            { emoji: '🐱', name: 'Cat', viviparous: true, info: 'Cats are viviparous. Kittens are born alive!' },
+            { emoji: '🐴', name: 'Horse', viviparous: true, info: 'Horses are viviparous. Foals are born alive and can walk quickly!' },
+            { emoji: '🐷', name: 'Pig', viviparous: true, info: 'Pigs are viviparous. Piglets are born alive!' },
+            { emoji: '🐑', name: 'Sheep', viviparous: true, info: 'Sheep are viviparous. Lambs are born alive!' },
+            { emoji: '🐘', name: 'Elephant', viviparous: true, info: 'Elephants are viviparous. Baby elephants are born alive after almost 2 years!' },
+            { emoji: '🦁', name: 'Lion', viviparous: true, info: 'Lions are viviparous. Cubs are born alive!' },
+            { emoji: '🐻', name: 'Bear', viviparous: true, info: 'Bears are viviparous. Bear cubs are born alive!' },
+            { emoji: '🐬', name: 'Dolphin', viviparous: true, info: 'Dolphins are viviparous. Baby dolphins are born alive in the water!' },
+            { emoji: '🐳', name: 'Whale', viviparous: true, info: 'Whales are viviparous. Baby whales are born alive in the ocean!' },
+            { emoji: '🦇', name: 'Bat', viviparous: true, info: 'Bats are viviparous. Baby bats are born alive!' },
+            { emoji: '🐐', name: 'Goat', viviparous: true, info: 'Goats are viviparous. Kids (baby goats) are born alive!' },
+            { emoji: '🐰', name: 'Rabbit', viviparous: true, info: 'Rabbits are viviparous. Baby rabbits are born alive!' },
+            { emoji: '🦊', name: 'Fox', viviparous: true, info: 'Foxes are viviparous. Fox cubs are born alive!' },
+            // Oviparous (lay eggs)
+            { emoji: '🐔', name: 'Chicken', viviparous: false, info: 'Chickens are oviparous. Chicks hatch from eggs!' },
+            { emoji: '🐦', name: 'Bird', viviparous: false, info: 'Birds are oviparous. Baby birds hatch from eggs in a nest!' },
+            { emoji: '🐢', name: 'Turtle', viviparous: false, info: 'Turtles are oviparous. Baby turtles hatch from eggs buried in sand!' },
+            { emoji: '🐊', name: 'Crocodile', viviparous: false, info: 'Crocodiles are oviparous. Baby crocodiles hatch from eggs!' },
+            { emoji: '🐸', name: 'Frog', viviparous: false, info: 'Frogs are oviparous. Tadpoles hatch from eggs in water!' },
+            { emoji: '🐍', name: 'Snake', viviparous: false, info: 'Most snakes are oviparous. Baby snakes hatch from eggs!' },
+            { emoji: '🦎', name: 'Lizard', viviparous: false, info: 'Most lizards are oviparous. Baby lizards hatch from eggs!' },
+            { emoji: '🐧', name: 'Penguin', viviparous: false, info: 'Penguins are oviparous. Baby penguins hatch from eggs kept warm by their parents!' },
+            { emoji: '🦆', name: 'Duck', viviparous: false, info: 'Ducks are oviparous. Ducklings hatch from eggs!' },
+            { emoji: '🦅', name: 'Eagle', viviparous: false, info: 'Eagles are oviparous. Eaglets hatch from eggs in high nests!' },
+            { emoji: '🐠', name: 'Fish', viviparous: false, info: 'Most fish are oviparous. Baby fish hatch from eggs in water!' },
+            { emoji: '🦜', name: 'Parrot', viviparous: false, info: 'Parrots are oviparous. Baby parrots hatch from eggs!' },
+            { emoji: '🦢', name: 'Swan', viviparous: false, info: 'Swans are oviparous. Baby swans (cygnets) hatch from eggs!' },
+            { emoji: '🦩', name: 'Flamingo', viviparous: false, info: 'Flamingos are oviparous. Baby flamingos hatch from eggs!' },
+            { emoji: '🦉', name: 'Owl', viviparous: false, info: 'Owls are oviparous. Baby owls (owlets) hatch from eggs!' }
+        ];
+
+        const game = createGameState();
+        let currentAnimal = null;
+
+        function displayRound() {
+            game.clearTimer();
+            currentAnimal = getRandomItem(animals, game.usedItems, a => a.name);
+
+            document.getElementById('animal-emoji').textContent = currentAnimal.emoji;
+            document.getElementById('animal-name').textContent = currentAnimal.name;
+
+            resetRoundState('animal-card');
+            const pills = document.querySelectorAll('.answer-pill');
+            pills.forEach(pill => pill.classList.remove('disabled', 'correct', 'incorrect'));
+        }
+
+        function makeGuess(selectedViviparous) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const isCorrect = selectedViviparous === currentAnimal.viviparous;
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            const pillsArray = Array.from(pills);
+            const selectedIndex = selectedViviparous ? 0 : 1;
+            const correctIndex = currentAnimal.viviparous ? 0 : 1;
+
+            if (isCorrect) {
+                pillsArray[selectedIndex].classList.add('correct');
+            } else {
+                pillsArray[selectedIndex].classList.add('incorrect');
+                pillsArray[correctIndex].classList.add('correct');
+            }
+
+            showFeedback(isCorrect, currentAnimal.info, 'animal-card');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
+        }
+
+        function nextRound() {
+            transitionToNextRound(displayRound);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>
