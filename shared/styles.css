@@ -599,3 +599,12 @@ body {
         font-size: 0.9em;
     }
 }
+
+/* Site footer */
+.site-footer {
+    text-align: center;
+    padding: var(--space-md) 0 var(--space-xs);
+    color: var(--color-neutral-700);
+    font-size: 0.9em;
+}
+

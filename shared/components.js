@@ -117,10 +117,21 @@ function renderBackgroundAnimation(containerId = 'background-animation') {
 /**
  * Initialize all shared components on page load
  */
+/**
+ * Renders the site footer with credits
+ */
+function renderFooter() {
+    const footer = document.createElement('footer');
+    footer.className = 'site-footer';
+    footer.textContent = 'Made with ❤️ for the kids';
+    document.querySelector('.main-container').appendChild(footer);
+}
+
 function initializeComponents() {
     renderTopHeader();
     renderScoreComponent();
     renderBackgroundAnimation();
+    renderFooter();
 }
 
 // Auto-initialize when DOM is ready
