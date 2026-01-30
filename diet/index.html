@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carnivore, Herbivore or Omnivore?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="diet.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🥩 Carnivore, Herbivore or Omnivore? 🥬"></div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Carnivore, Herbivore or Omnivore?</h1>
+                <p class="subtitle">Learn what animals eat!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="single-card animal-card" id="animal-card">
+                        <div class="animal-emoji" id="animal-emoji">🦁</div>
+                        <div class="animal-name" id="animal-name">Lion</div>
+                    </div>
+
+                    <div class="answer-options" id="answer-options">
+                        <button class="answer-pill" data-diet="carnivore" onclick="makeGuess('carnivore')">
+                            🥩 Carnivore
+                        </button>
+                        <button class="answer-pill" data-diet="herbivore" onclick="makeGuess('herbivore')">
+                            🌿 Herbivore
+                        </button>
+                        <button class="answer-pill" data-diet="omnivore" onclick="makeGuess('omnivore')">
+                            🍽️ Omnivore
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const animals = [
+            // Carnivores (eat meat)
+            { emoji: '🦁', name: 'Lion', diet: 'carnivore', info: 'Lions are carnivores. They hunt and eat other animals like zebras!' },
+            { emoji: '🐯', name: 'Tiger', diet: 'carnivore', info: 'Tigers are carnivores. They are powerful hunters that eat meat!' },
+            { emoji: '🦈', name: 'Shark', diet: 'carnivore', info: 'Sharks are carnivores. They eat fish and other sea animals!' },
+            { emoji: '🦅', name: 'Eagle', diet: 'carnivore', info: 'Eagles are carnivores. They hunt fish, rabbits, and small animals!' },
+            { emoji: '🐊', name: 'Crocodile', diet: 'carnivore', info: 'Crocodiles are carnivores. They catch and eat other animals!' },
+            { emoji: '🐍', name: 'Snake', diet: 'carnivore', info: 'Most snakes are carnivores. They eat mice, frogs, and other animals!' },
+            { emoji: '🦉', name: 'Owl', diet: 'carnivore', info: 'Owls are carnivores. They hunt mice and small animals at night!' },
+            { emoji: '🐆', name: 'Leopard', diet: 'carnivore', info: 'Leopards are carnivores. They are fast hunters that eat meat!' },
+            { emoji: '🐺', name: 'Wolf', diet: 'carnivore', info: 'Wolves are carnivores. They hunt in packs to catch prey!' },
+            { emoji: '🦊', name: 'Fox', diet: 'carnivore', info: 'Foxes are mostly carnivores. They eat rabbits, birds, and mice!' },
+            // Herbivores (eat plants)
+            { emoji: '🐄', name: 'Cow', diet: 'herbivore', info: 'Cows are herbivores. They eat grass and plants all day!' },
+            { emoji: '🐴', name: 'Horse', diet: 'herbivore', info: 'Horses are herbivores. They eat grass, hay, and oats!' },
+            { emoji: '🐰', name: 'Rabbit', diet: 'herbivore', info: 'Rabbits are herbivores. They love carrots, grass, and leaves!' },
+            { emoji: '🐘', name: 'Elephant', diet: 'herbivore', info: 'Elephants are herbivores. They eat leaves, grass, and fruit!' },
+            { emoji: '🦒', name: 'Giraffe', diet: 'herbivore', info: 'Giraffes are herbivores. They eat leaves from tall trees!' },
+            { emoji: '🐑', name: 'Sheep', diet: 'herbivore', info: 'Sheep are herbivores. They eat grass in the fields!' },
+            { emoji: '🐐', name: 'Goat', diet: 'herbivore', info: 'Goats are herbivores. They eat grass, leaves, and shrubs!' },
+            { emoji: '🦓', name: 'Zebra', diet: 'herbivore', info: 'Zebras are herbivores. They eat grass on the African plains!' },
+            { emoji: '🐢', name: 'Tortoise', diet: 'herbivore', info: 'Tortoises are herbivores. They eat plants, flowers, and vegetables!' },
+            { emoji: '🦌', name: 'Deer', diet: 'herbivore', info: 'Deer are herbivores. They eat grass, leaves, and berries!' },
+            // Omnivores (eat both)
+            { emoji: '🐻', name: 'Bear', diet: 'omnivore', info: 'Bears are omnivores. They eat fish, berries, honey, and plants!' },
+            { emoji: '🐷', name: 'Pig', diet: 'omnivore', info: 'Pigs are omnivores. They eat plants, fruits, and insects!' },
+            { emoji: '🐔', name: 'Chicken', diet: 'omnivore', info: 'Chickens are omnivores. They eat seeds, insects, and worms!' },
+            { emoji: '🐶', name: 'Dog', diet: 'omnivore', info: 'Dogs are omnivores. They can eat meat, rice, and vegetables!' },
+            { emoji: '🐒', name: 'Monkey', diet: 'omnivore', info: 'Monkeys are omnivores. They eat fruits, insects, and seeds!' },
+            { emoji: '🦝', name: 'Raccoon', diet: 'omnivore', info: 'Raccoons are omnivores. They eat fruits, nuts, fish, and insects!' },
+            { emoji: '🐦', name: 'Crow', diet: 'omnivore', info: 'Crows are omnivores. They eat seeds, insects, and small animals!' },
+            { emoji: '🦆', name: 'Duck', diet: 'omnivore', info: 'Ducks are omnivores. They eat plants, insects, and small fish!' },
+            { emoji: '🐭', name: 'Mouse', diet: 'omnivore', info: 'Mice are omnivores. They eat seeds, fruits, and insects!' },
+            { emoji: '🦔', name: 'Hedgehog', diet: 'omnivore', info: 'Hedgehogs are omnivores. They eat insects, snails, and berries!' }
+        ];
+
+        const game = createGameState();
+        let currentAnimal = null;
+
+        function displayRound() {
+            game.clearTimer();
+            currentAnimal = getRandomItem(animals, game.usedItems, a => a.name);
+
+            document.getElementById('animal-emoji').textContent = currentAnimal.emoji;
+            document.getElementById('animal-name').textContent = currentAnimal.name;
+
+            resetRoundState('animal-card');
+            const pills = document.querySelectorAll('.answer-pill');
+            pills.forEach(pill => pill.classList.remove('disabled', 'correct', 'incorrect'));
+        }
+
+        function makeGuess(selectedDiet) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const isCorrect = selectedDiet === currentAnimal.diet;
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            pills.forEach(pill => {
+                if (pill.dataset.diet === selectedDiet && !isCorrect) {
+                    pill.classList.add('incorrect');
+                }
+                if (pill.dataset.diet === currentAnimal.diet) {
+                    pill.classList.add('correct');
+                }
+            });
+
+            showFeedback(isCorrect, currentAnimal.info, 'animal-card');
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
+        }
+
+        function nextRound() {
+            transitionToNextRound(displayRound);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>

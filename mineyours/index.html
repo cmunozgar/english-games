@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mine or Yours?</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="mineyours.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="background-animation"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header with back link and logo -->
+        <div class="top-header" id="top-header" data-title="🙋 Mine or Yours? 🫵"></div>
+
+        <!-- Game Card -->
+        <div class="game-container">
+            <div class="header">
+                <h1>Mine or Yours?</h1>
+                <p class="subtitle">Learn when to use "mine" and "yours"!</p>
+            </div>
+
+            <div id="score-container"></div>
+
+            <div id="game-play">
+                <div class="guess-layout">
+                    <div class="scene-container">
+                        <div class="sentence-card">
+                            <div class="characters">
+                                <div class="character">
+                                    <div class="character-emoji" id="speaker-emoji">🙋</div>
+                                    <div class="character-label" id="speaker-label">I</div>
+                                </div>
+                                <div class="character">
+                                    <div class="character-emoji" id="listener-emoji">🫵</div>
+                                    <div class="character-label" id="listener-label">You</div>
+                                </div>
+                            </div>
+                            <div class="sentence-text">
+                                <span class="context" id="context">The ball belongs to me.</span>
+                            </div>
+                            <div class="sentence-text question-sentence">
+                                <span class="prompt">The ball is</span>
+                                <span class="blank" id="blank">______</span>
+                            </div>
+                        </div>
+
+                        <div class="answer-options" id="answer-options">
+                            <button class="answer-pill" onclick="makeGuess('mine')">Mine</button>
+                            <button class="answer-pill" onclick="makeGuess('yours')">Yours</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <div class="feedback-message" id="feedback"></div>
+                </div>
+
+                <button class="next-button" id="next-button" onclick="nextRound()"><span>Next Round →</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/components.js"></script>
+    <script>
+        const scenarios = [
+            // Mine scenarios
+            { context: 'The ball belongs to me.', prompt: 'The ball is', answer: 'mine', object: '⚽', info: '<span style="font-weight:600;">The ball is mine.</span> We say "mine" when something belongs to me!' },
+            { context: 'I bought this book.', prompt: 'This book is', answer: 'mine', object: '📖', info: '<span style="font-weight:600;">This book is mine.</span> "Mine" means it belongs to me!' },
+            { context: 'This is my dog.', prompt: 'This dog is', answer: 'mine', object: '🐶', info: '<span style="font-weight:600;">This dog is mine.</span> "Mine" replaces "my" when no noun follows!' },
+            { context: 'I own this bike.', prompt: 'This bike is', answer: 'mine', object: '🚲', info: '<span style="font-weight:600;">This bike is mine.</span> We use "mine" to show I own it!' },
+            { context: 'This hat belongs to me.', prompt: 'This hat is', answer: 'mine', object: '🎩', info: '<span style="font-weight:600;">This hat is mine.</span> "Mine" means it is my hat!' },
+            { context: 'I made this drawing.', prompt: 'This drawing is', answer: 'mine', object: '🎨', info: '<span style="font-weight:600;">This drawing is mine.</span> I made it, so it is mine!' },
+            { context: 'This is my pencil.', prompt: 'This pencil is', answer: 'mine', object: '✏️', info: '<span style="font-weight:600;">This pencil is mine.</span> "Mine" shows it belongs to me!' },
+            { context: 'I brought this lunch.', prompt: 'This lunch is', answer: 'mine', object: '🍱', info: '<span style="font-weight:600;">This lunch is mine.</span> I brought it, so it is mine!' },
+            { context: 'This is my toy.', prompt: 'This toy is', answer: 'mine', object: '🧸', info: '<span style="font-weight:600;">This toy is mine.</span> "Mine" means it is my toy!' },
+            { context: 'I own this guitar.', prompt: 'This guitar is', answer: 'mine', object: '🎸', info: '<span style="font-weight:600;">This guitar is mine.</span> I own it, so it is mine!' },
+            { context: 'This jacket belongs to me.', prompt: 'This jacket is', answer: 'mine', object: '🧥', info: '<span style="font-weight:600;">This jacket is mine.</span> "Mine" shows I own this jacket!' },
+            { context: 'I wrote this homework.', prompt: 'This homework is', answer: 'mine', object: '📝', info: '<span style="font-weight:600;">This homework is mine.</span> I wrote it, so it is mine!' },
+            // Yours scenarios
+            { context: 'The ball belongs to you.', prompt: 'The ball is', answer: 'yours', object: '⚽', info: '<span style="font-weight:600;">The ball is yours.</span> We say "yours" when something belongs to you!' },
+            { context: 'You bought this book.', prompt: 'This book is', answer: 'yours', object: '📖', info: '<span style="font-weight:600;">This book is yours.</span> "Yours" means it belongs to you!' },
+            { context: 'This is your dog.', prompt: 'This dog is', answer: 'yours', object: '🐶', info: '<span style="font-weight:600;">This dog is yours.</span> "Yours" replaces "your" when no noun follows!' },
+            { context: 'You own this bike.', prompt: 'This bike is', answer: 'yours', object: '🚲', info: '<span style="font-weight:600;">This bike is yours.</span> We use "yours" to show you own it!' },
+            { context: 'This hat belongs to you.', prompt: 'This hat is', answer: 'yours', object: '🎩', info: '<span style="font-weight:600;">This hat is yours.</span> "Yours" means it is your hat!' },
+            { context: 'You made this drawing.', prompt: 'This drawing is', answer: 'yours', object: '🎨', info: '<span style="font-weight:600;">This drawing is yours.</span> You made it, so it is yours!' },
+            { context: 'This is your pencil.', prompt: 'This pencil is', answer: 'yours', object: '✏️', info: '<span style="font-weight:600;">This pencil is yours.</span> "Yours" shows it belongs to you!' },
+            { context: 'You brought this lunch.', prompt: 'This lunch is', answer: 'yours', object: '🍱', info: '<span style="font-weight:600;">This lunch is yours.</span> You brought it, so it is yours!' },
+            { context: 'This is your toy.', prompt: 'This toy is', answer: 'yours', object: '🧸', info: '<span style="font-weight:600;">This toy is yours.</span> "Yours" means it is your toy!' },
+            { context: 'You own this guitar.', prompt: 'This guitar is', answer: 'yours', object: '🎸', info: '<span style="font-weight:600;">This guitar is yours.</span> You own it, so it is yours!' },
+            { context: 'This jacket belongs to you.', prompt: 'This jacket is', answer: 'yours', object: '🧥', info: '<span style="font-weight:600;">This jacket is yours.</span> "Yours" shows you own this jacket!' },
+            { context: 'You wrote this homework.', prompt: 'This homework is', answer: 'yours', object: '📝', info: '<span style="font-weight:600;">This homework is yours.</span> You wrote it, so it is yours!' }
+        ];
+
+        const game = createGameState();
+        let currentScenario = null;
+
+        function displayRound() {
+            game.clearTimer();
+
+            currentScenario = getRandomItem(scenarios, game.usedItems, s => s.context + s.answer);
+
+            document.getElementById('context').textContent = currentScenario.context;
+            document.querySelector('.prompt').textContent = currentScenario.prompt;
+
+            // Show the relevant emoji based on whose item it is
+            if (currentScenario.answer === 'mine') {
+                document.getElementById('speaker-emoji').textContent = '🙋';
+                document.getElementById('listener-emoji').textContent = '🫵';
+            } else {
+                document.getElementById('speaker-emoji').textContent = '🙋';
+                document.getElementById('listener-emoji').textContent = '🫵';
+            }
+
+            const container = document.getElementById('answer-options');
+            container.innerHTML = `
+                <button class="answer-pill" onclick="makeGuess('mine')">Mine</button>
+                <button class="answer-pill" onclick="makeGuess('yours')">Yours</button>
+            `;
+
+            resetRoundState(null);
+        }
+
+        function makeGuess(selected) {
+            const pills = document.querySelectorAll('.answer-pill');
+            const isCorrect = selected === currentScenario.answer;
+
+            pills.forEach(pill => pill.classList.add('disabled'));
+
+            pills.forEach(pill => {
+                const pillAnswer = pill.textContent.trim().toLowerCase();
+                if (pillAnswer === selected) {
+                    pill.classList.add(isCorrect ? 'correct' : 'incorrect');
+                }
+                if (!isCorrect && pillAnswer === currentScenario.answer) {
+                    pill.classList.add('correct');
+                }
+            });
+
+            document.getElementById('blank').textContent = currentScenario.answer;
+            document.getElementById('blank').classList.add('filled');
+
+            showFeedback(isCorrect, currentScenario.info);
+            game.updateStreak(isCorrect);
+            game.startAutoAdvance(nextRound);
+        }
+
+        function nextRound() {
+            document.getElementById('blank').textContent = '______';
+            document.getElementById('blank').classList.remove('filled');
+            transitionToNextRound(displayRound);
+        }
+
+        displayRound();
+    </script>
+</body>
+</html>
